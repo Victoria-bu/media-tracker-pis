@@ -1,0 +1,47 @@
+% !TEX program = xelatex
+% SKED document (Socratic Knowledge Elicitation & Documentation), phase 5.
+% Build: python3 <plugin>/scripts/build.py --dir .   (or: xelatex main; xelatex main)
+% Every paragraph that carries knowledge from K* ends with \sked{K..} tags.
+% Add the `review` class option to see those tags in the margin.
+\documentclass[profile=dstu,lang=uk]{skedreport}
+
+\skedtitle{Специфікація вимог до інформаційної системи персонального обліку медіа-контенту}
+\skedsubtitle{Software Requirements Specification}
+\skedauthor{Букша Вікторія}
+\skedaffiliation{Студентка курсу «Проектування інформаційних систем»}
+\skedorganization{}
+\skeddoctype{Специфікація вимог}
+\skedversion{1.3.0}
+\skeddate{25 вересня 2026~р.}
+\skedcity{Київ}
+\skedudc{004.415.2}
+\skedkeywords{специфікація вимог, медіа-трекер, веб-застосунок, SRS, каталог контенту, сократичний діалог}
+\skedplatform{Веб-браузер}
+
+\begin{document}
+
+\skedmaketitle
+
+\begin{abstract}
+Цей документ містить специфікацію вимог (SRS) до веб-застосунку персонального обліку медіа-контенту~--- книг, серіалів і фільмів. Система призначена для зареєстрованих користувачів, які ведуть особистий каталог переглянутого та прочитаного контенту. Документ визначає функціональні вимоги (31~вимога), нефункціональні вимоги (8~вимог), критерії прийняття, BDD-сценарії та матрицю простежуваності для версії~v1 (MVP). Документ підготовлений за методологією SKED (Socratic Knowledge Elicitation \& Documentation) у рамках навчального курсу «Проектування інформаційних систем». До MVP входять: реєстрація та авторизація, каталог із CRUD-операціями, теги з автодоповненням, механізм Sessions для фіксації повторних переглядів, добірки (many-to-many), автозаповнення дати завершення та особиста статистика. Функції соціальної взаємодії, офлайн-режим та інтеграція зі сторонніми медіа-базами перенесені до наступних версій.
+\end{abstract}
+
+\skedtoc
+
+\input{sections/01-vstup}
+\input{sections/02-zahalnyi-opys}
+\input{sections/03-hlosarii}
+\input{sections/metodolohiia}
+\input{sections/04-funktsionalni-vymohy}
+\input{sections/05-nefunktsionalni-vymohy}
+\input{sections/06-kryterii-pryiniattia}
+\input{sections/07-bdd-stsenarii}
+\input{sections/08-matrytsia}
+
+\skedappendix
+
+\input{sections/A-poza-mvp}
+
+\skedbibliography
+
+\end{document}

@@ -1,0 +1,60 @@
+\section{Матриця простежуваності вимог}
+\label{sec:matrytsia}
+
+\begin{longtable}{L{2.8cm} L{3.2cm} L{2.5cm} L{5.5cm}}
+\caption{Матриця простежуваності} \label{tab:matrytsia} \\
+\toprule
+\textbf{REQ ID} & \textbf{AC ID} & \textbf{BDD} & \textbf{Примітка} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{REQ ID} & \textbf{AC ID} & \textbf{BDD} & \textbf{Примітка} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\emph{Продовження на наступній сторінці}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+REQ-F-001 & AC-001 & \lstref{lst:bdd} & Реєстрація \\
+REQ-F-002 & AC-002 & \lstref{lst:bdd-login} & Вхід \\
+REQ-F-003 & AC-003 & --- & Вихід \\
+REQ-F-004 & AC-004 & --- & Каталог \\
+REQ-F-005 & AC-005 & --- & Фільтр за типом \\
+REQ-F-006 & AC-006 & --- & Фільтр за статусом \\
+REQ-F-007 & AC-007 & --- & Додавання елемента \\
+REQ-F-008 & AC-008 & --- & Редагування елемента \\
+REQ-F-009 & AC-009 & --- & Видалення елемента \\
+REQ-F-010 & AC-010 & --- & Теги з автодоповненням \\
+REQ-F-011 & AC-011 & \lstref{lst:bdd-tag} & Фільтр за тегом \\
+REQ-F-012 & AC-012 & \lstref{lst:bdd-session} & Sessions \\
+REQ-F-013 & AC-013 & --- & Перегляд Sessions \\
+REQ-F-014 & AC-014 & --- & Редагування~/ видалення Session \\
+REQ-F-015 & AC-015 & \lstref{lst:bdd-collection} & Many-to-many добірки \\
+REQ-F-016 & AC-016 & --- & Створення добірки \\
+REQ-F-017 & AC-017 & --- & Редагування добірки \\
+REQ-F-018 & AC-018 & --- & Видалення добірки \\
+REQ-F-019 & AC-019 & \lstref{lst:bdd-collection} & Видалення з добірки \\
+REQ-F-020 & AC-020 & --- & Перегляд добірки \\
+REQ-F-021 & AC-021 & \lstref{lst:bdd-date} & Автодата \\
+REQ-F-022 & AC-022 & --- & Статистика \\
+REQ-F-022a & AC-030 & --- & Часовий проміжок статистики \\
+REQ-F-023 & AC-023 & --- & Пошук за назвою \\
+REQ-F-024 & AC-024 & --- & Тип-специфічні поля \\
+REQ-F-025 & AC-025 & --- & Обкладинка \\
+REQ-F-026 & AC-026 & --- & Сортування каталогу \\
+REQ-F-027 & AC-027 & --- & Сортування добірки \\
+REQ-F-028 & AC-028 & --- & Обмеження обкладинки \\
+REQ-F-029 & AC-029 & --- & Редагування профілю \\
+REQ-NF-001 & --- & --- & Продуктивність \\
+REQ-NF-002 & --- & --- & Безпека~/ хешування \\
+REQ-NF-003 & --- & --- & Надійність \\
+REQ-NF-004 & --- & --- & Адаптивний інтерфейс \\
+REQ-NF-005 & --- & --- & Сумісність браузерів \\
+REQ-NF-006 & AC-031 & --- & Валідація вхідних даних \\
+REQ-NF-007 & --- & --- & Безпека сесії (CSRF, HTTP-only) \\
+REQ-NF-008 & AC-032 & --- & Порожні стани \\
+REQ-NF-009 & AC-033 & --- & Log-файли тестування \\
+
+\end{longtable}

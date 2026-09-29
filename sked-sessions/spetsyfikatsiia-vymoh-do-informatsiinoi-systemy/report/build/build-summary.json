@@ -1,0 +1,10 @@
+{
+  "dir": "/Users/victoriabuksha/media-tracker-pis/sked-sessions/spetsyfikatsiia-vymoh-do-informatsiinoi-systemy/report",
+  "profile": "dstu",
+  "lang": "uk",
+  "setup_log": [],
+  "ok": false,
+  "errors": [
+    "xelatex not installed (apt-get install texlive-xetex texlive-latex-extra ...)"
+  ]
+}
