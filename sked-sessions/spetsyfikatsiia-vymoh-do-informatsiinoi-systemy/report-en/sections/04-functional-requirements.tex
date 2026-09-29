@@ -1,0 +1,173 @@
+\section{Functional Requirements}
+\label{sec:funktsionalni-vymohy}
+
+\subsection{Authentication and Account Management}
+
+\begin{table}[h]
+\caption{Authentication and Account Requirements}
+\label{tab:auth}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-001 & The system shall allow user registration with email, password, and nickname (all three fields are mandatory). Re-registration with the same email is not allowed. \sked{K7} \\
+\addlinespace
+REQ-F-002 & The system shall allow account login with email and password. \sked{K8} \\
+\addlinespace
+REQ-F-003 & The system shall allow account logout. After logout, access to protected pages requires re-authentication. \sked{K9} \\
+\addlinespace
+REQ-F-029 & The user may change their nickname in account settings. \sked{K49} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Catalog}
+
+\begin{table}[h]
+\caption{Catalog Requirements}
+\label{tab:kataloh}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-004 & The system shall display a personal catalog --- a list of all user content items. \sked{K10} \\
+\addlinespace
+REQ-F-005 & The system shall provide catalog filtering by item type (book~/ TV series~/ film). \sked{K11} \\
+\addlinespace
+REQ-F-006 & The system shall provide catalog filtering by item status. Available status values: ``planned'', ``in progress'', ``completed'', ``on hold''. \sked{K12} \\
+\addlinespace
+REQ-F-023 & The system shall provide catalog item search by title. \sked{K29} \\
+\addlinespace
+REQ-F-026 & The system shall provide catalog sorting: by date added (newest~/ oldest) and by rating (highest to lowest and vice versa). \sked{K32} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Content Item Management}
+
+\begin{table}[h]
+\caption{Content Item Management Requirements}
+\label{tab:content}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-007 & The system shall allow adding a new content item with attributes: title (required), type (required), status, rating~(0--10), notes, tags. The form displays type-specific optional fields (REQ-F-024) and a cover image field (REQ-F-025). \sked{K13} \\
+\addlinespace
+REQ-F-008 & The system shall allow editing any attribute of an existing content item. \sked{K14} \\
+\addlinespace
+REQ-F-009 & The system shall allow deleting a content item from the catalog. A deleted item is automatically removed from all collections. \sked{K15} \\
+\addlinespace
+REQ-F-024 & The add and edit item form shall display type-specific optional fields depending on the selected type (see \tabref{tab:type-fields}). \sked{K30} \\
+\addlinespace
+REQ-F-025 & Each content item shall have a cover image: by default --- one of three illustrations corresponding to the type. The user may replace it with their own image (optional). \sked{K31} \\
+\addlinespace
+REQ-F-028 & Cover image formats: JPEG, PNG, WebP; maximum file size: 5~MB. The system notifies the user when limits are violated. \sked{K48} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Type-Specific Content Item Fields}
+\label{tab:type-fields}
+\begin{tabular}{L{3cm} L{11cm}}
+\toprule
+\textbf{Type} & \textbf{Optional Fields} \\
+\midrule
+Book & Author, number of pages \\
+TV Series & Number of seasons \\
+Film & Director, duration \\
+\bottomrule
+\end{tabular}
+\end{table}
+\sked{K30}
+
+\subsection{Tags}
+
+\begin{table}[h]
+\caption{Tag Requirements}
+\label{tab:tehy}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-010 & The system shall allow adding arbitrary tags to a content item. When entering a tag, the system offers autocomplete based on the user's previously entered tags. One item can have multiple tags. A tag can be removed at any time. \sked{K16} \\
+\addlinespace
+REQ-F-011 & The system shall provide catalog filtering and search by tag. \sked{K17} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sessions (Repeated Viewings / Readings)}
+
+\begin{table}[h]
+\caption{Session Requirements}
+\label{tab:sessions}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-012 & The system shall allow recording multiple Sessions for a single content item; each Session has its own date, rating, and note. \sked{K18} \\
+\addlinespace
+REQ-F-013 & The system shall display the list of all Sessions of a content item in reverse chronological order (newest to oldest), with the total count. \sked{K19} \\
+\addlinespace
+REQ-F-014 & The system shall allow editing and deleting an individual Session. \sked{K20} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Collections}
+
+\begin{table}[h]
+\caption{Collection Requirements}
+\label{tab:dobirkы}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-015 & The system shall allow adding a single catalog item to multiple collections simultaneously (many-to-many relationship). \sked{K21} \\
+\addlinespace
+REQ-F-016 & The system shall allow creating a new named collection. \sked{K22} \\
+\addlinespace
+REQ-F-017 & The system shall allow editing a collection name. \sked{K23} \\
+\addlinespace
+REQ-F-018 & The system shall allow deleting a collection. Deleting a collection does not delete items from the catalog. \sked{K24} \\
+\addlinespace
+REQ-F-019 & The system shall allow removing an item from a collection without deleting it from the catalog or other collections. \sked{K25} \\
+\addlinespace
+REQ-F-020 & The system shall display the contents of a collection --- the list of items it contains, with the name, type, and status of each. \sked{K26} \\
+\addlinespace
+REQ-F-027 & The system shall provide sorting of items within a collection: by date added (newest~/ oldest) and by rating (highest to lowest and vice versa). \sked{K33} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Automatic Completion Date Fill}
+
+\begin{table}[h]
+\caption{Completion Date Requirement}
+\label{tab:data}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-021 & When changing an item's status to ``completed'', the completion date field shall be automatically filled with the current date if no date was entered manually. \sked{K27} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Personal Statistics}
+
+\begin{table}[h]
+\caption{Personal Statistics Requirements}
+\label{tab:stat}
+\begin{tabular}{L{2.5cm} L{11.5cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} \\
+\midrule
+REQ-F-022 & The system shall display personal statistics: the number of items with ``completed'' status broken down by type (books~/ TV series~/ films) and by selected time period. \sked{K28} \\
+\addlinespace
+REQ-F-022a & Time period selection for statistics --- from predefined options: ``this month'', ``this year'', ``all time''. \sked{K51} \\
+\bottomrule
+\end{tabular}
+\end{table}

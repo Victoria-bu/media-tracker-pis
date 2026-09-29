@@ -1,0 +1,90 @@
+\section{BDD Scenarios}
+\label{sec:bdd}
+
+Below are BDD scenarios in Gherkin format for key system functions.
+
+\begin{codelisting}
+\caption{New User Registration}
+\label{lst:bdd}
+\begin{skedcode}
+Scenario: New user registration
+  Given the registration page is open
+  And email "test@example.com" is not yet registered in the system
+  When the user enters email "test@example.com", a password, and a nickname
+    and confirms registration
+  Then the user gains access to an empty personal catalog
+  And a repeated registration attempt with the same email shows the message
+    "An account with this email already exists"
+\end{skedcode}
+\end{codelisting}
+\sked{K7}
+
+\begin{codelisting}
+\caption{Account Login}
+\label{lst:bdd-login}
+\begin{skedcode}
+Scenario: Login with correct credentials
+  Given the user is registered in the system
+  When they enter the correct email and password and click "Sign in"
+  Then they are redirected to their personal catalog
+  And they see their previously added items
+\end{skedcode}
+\end{codelisting}
+\sked{K8}
+
+\begin{codelisting}
+\caption{Repeated Viewing with a Different Rating}
+\label{lst:bdd-session}
+\begin{skedcode}
+Scenario: Re-watching a film with a different rating
+  Given content item "Film X" already has one Session with rating 9
+  When the user adds a new Session for the same item
+    with rating 5 and note "didn't enjoy it the second time"
+  Then the content item has two Sessions, each with its own date,
+    rating, and note
+  And both ratings are stored separately, neither overwrites the other
+\end{skedcode}
+\end{codelisting}
+\sked{K18}
+
+\begin{codelisting}
+\caption{Item in Multiple Collections}
+\label{lst:bdd-collection}
+\begin{skedcode}
+Scenario: An item belongs to multiple collections simultaneously
+  Given the user has item "Book Y" in the catalog
+  And collections "Favourites" and "2026" exist
+  When the user adds "Book Y" to both collections
+  Then "Book Y" is displayed in the contents of both collections
+  And removing "Book Y" from collection "2026" does not remove it
+    from "Favourites" or from the catalog
+\end{skedcode}
+\end{codelisting}
+\sked{K21,K25}
+
+\begin{codelisting}
+\caption{Automatic Completion Date Fill}
+\label{lst:bdd-date}
+\begin{skedcode}
+Scenario: Automatic completion date fill
+  Given the user is editing an item with status "in progress"
+  When the user changes the status to "completed"
+    and does not enter a date manually
+  Then the system automatically sets the completion date
+    equal to the current date
+\end{skedcode}
+\end{codelisting}
+\sked{K27}
+
+\begin{codelisting}
+\caption{Filtering by Tag}
+\label{lst:bdd-tag}
+\begin{skedcode}
+Scenario: Filtering the catalog by tag
+  Given the catalog contains three items: two tagged "fantasy" and one without
+  When the user selects the filter by tag "fantasy"
+  Then only the two items tagged with that tag are displayed
+  And when the filter is cleared, all three items are displayed again
+\end{skedcode}
+\end{codelisting}
+\sked{K17}

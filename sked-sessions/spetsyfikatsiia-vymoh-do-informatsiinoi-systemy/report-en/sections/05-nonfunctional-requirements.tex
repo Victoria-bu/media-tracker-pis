@@ -1,0 +1,40 @@
+\section{Non-Functional Requirements}
+\label{sec:nefunktsionalni-vymohy}
+
+\subsection{Performance}
+
+\textbf{REQ-NF-001.} System pages shall load in an acceptable time for the user under normal network connection conditions. \sked{K34}
+
+\subsection{Security}
+
+\textbf{REQ-NF-002.} User passwords are stored exclusively in a protected form --- as hashes (e.g., bcrypt). Access to protected resources requires an active authenticated session. \sked{K35}
+
+\textbf{REQ-NF-007.} The authorization token is stored in an HTTP-only cookie to prevent XSS attacks. All requests that modify system state must be protected against CSRF attacks. \sked{K47}
+
+\subsection{Reliability}
+
+\textbf{REQ-NF-003.} All user data is stored in the database. No user action shall result in the loss of previously entered data without explicit deletion confirmation from the user. \sked{K36}
+
+\subsection{Usability}
+
+\textbf{REQ-NF-004.} The system's interface shall be responsive for desktop and mobile browsers. Separate tablet optimization is not planned for version~v1. \sked{K37}
+
+\textbf{REQ-NF-008.} When the catalog is empty, a collection is empty, or search~/ filter results are absent, the system shall display an informative message instead of an empty list. \sked{K52}
+
+\subsection{Compatibility}
+
+\textbf{REQ-NF-005.} The system shall function correctly in the latest two versions of: Google~Chrome, Mozilla~Firefox, Microsoft~Edge, and Apple~Safari (including mobile Safari on iOS). \sked{K45}
+
+\subsection{Input Validation}
+
+\textbf{REQ-NF-006.} During new user registration, the system shall validate:
+\begin{itemize}
+  \item email --- format per RFC~5322;
+  \item password --- minimum length of 8 characters;
+  \item nickname --- 2 to 50 characters.
+\end{itemize}
+If any constraint is violated, the system displays a specific error message indicating the reason for rejection. \sked{K46}
+
+\subsection{Development Process}
+
+\textbf{REQ-NF-009.} After each test run, the development agent shall write a log file to the \texttt{logs/} directory. The log file must contain: total number of tests, passed~/ failed~/ skipped count, status of each individual test (name~+ result), and execution time of the test suite. \sked{K54}

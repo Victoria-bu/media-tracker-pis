@@ -1,0 +1,86 @@
+\section{Acceptance Criteria}
+\label{sec:acceptance-criteria}
+
+\begin{longtable}{L{2cm} L{2.5cm} L{9.5cm}}
+\caption{Requirement Acceptance Criteria} \label{tab:ac} \\
+\toprule
+\textbf{AC ID} & \textbf{Req} & \textbf{Acceptance Criterion} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{AC ID} & \textbf{Req} & \textbf{Acceptance Criterion} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\emph{Continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+AC-001 & REQ-F-001 & After filling in a valid email, password, and nickname and confirming registration, the user gains access to an empty personal catalog. Re-registration with the same email is not possible: the system displays a message about an existing account. \sked{K7} \\
+\addlinespace
+AC-002 & REQ-F-002 & After entering the correct email and password, the user is redirected to their catalog. With incorrect credentials --- an error message is displayed and login does not proceed. \sked{K8} \\
+\addlinespace
+AC-003 & REQ-F-003 & After logout, accessing protected pages redirects to the login page. Re-authentication restores access. \sked{K9} \\
+\addlinespace
+AC-004 & REQ-F-004 & The catalog displays all added items; for each item, the title, type, status, and rating are visible. \sked{K10} \\
+\addlinespace
+AC-005 & REQ-F-005 & When selecting type ``Books'', only items of type ``book'' are displayed; when the filter is cleared --- all items are shown again. \sked{K11} \\
+\addlinespace
+AC-006 & REQ-F-006 & When selecting status ``completed'', only items with that status are displayed; when cleared --- all items are shown again. \sked{K12} \\
+\addlinespace
+AC-007 & REQ-F-007 & After filling in required fields (title, type), the item appears in the catalog with its corresponding attributes and cover image. \sked{K13} \\
+\addlinespace
+AC-008 & REQ-F-008 & After editing and saving, the updated attributes are shown in the catalog and on the item page. \sked{K14} \\
+\addlinespace
+AC-009 & REQ-F-009 & After confirming deletion, the item disappears from the catalog and from all collections it belonged to. \sked{K15} \\
+\addlinespace
+AC-010 & REQ-F-010 & An added tag appears on the item card. When typing in the tag field --- autocomplete suggestions from previously used tags are shown. Removing a tag does not affect other attributes. \sked{K16} \\
+\addlinespace
+AC-011 & REQ-F-011 & When filtering by tag, only items with that tag are displayed; the result updates when the filter is changed or cleared. \sked{K17} \\
+\addlinespace
+AC-012 & REQ-F-012 & For an item with two or more Sessions --- a list of all records with date, rating, and note is shown. \sked{K18} \\
+\addlinespace
+AC-013 & REQ-F-013 & Sessions are sorted from newest to oldest; the total count is indicated. \sked{K19} \\
+\addlinespace
+AC-014 & REQ-F-014 & After editing a Session --- updated data is shown. After deletion --- the session disappears and the count decreases. \sked{K20} \\
+\addlinespace
+AC-015 & REQ-F-015 & An item is simultaneously displayed in each collection it has been added to. Removal from one collection does not affect the others. \sked{K21} \\
+\addlinespace
+AC-016 & REQ-F-016 & After entering a name, the new empty collection appears in the collections list. \sked{K22} \\
+\addlinespace
+AC-017 & REQ-F-017 & After saving, the new name is displayed in the list and in the page heading. \sked{K23} \\
+\addlinespace
+AC-018 & REQ-F-018 & After confirming deletion, the collection disappears; items remain in the catalog. \sked{K24} \\
+\addlinespace
+AC-019 & REQ-F-019 & After removing an item from a collection, it remains in the catalog and in other collections. \sked{K25} \\
+\addlinespace
+AC-020 & REQ-F-020 & The collection page displays all items with title, type, and status. \sked{K26} \\
+\addlinespace
+AC-021 & REQ-F-021 & If no date is entered when changing status to ``completed'' --- the current date is automatically set. If entered manually --- the entered value is saved. \sked{K27} \\
+\addlinespace
+AC-022 & REQ-F-022 & The statistics page displays the count of completed items by type and by the selected time period. \sked{K28} \\
+\addlinespace
+AC-023 & REQ-F-023 & When entering part of a title, the catalog displays only matching items; when cleared --- all items are shown. \sked{K29} \\
+\addlinespace
+AC-024 & REQ-F-024 & The form displays type-specific fields only after a type is selected; all fields are optional. \sked{K30} \\
+\addlinespace
+AC-025 & REQ-F-025 & Without a custom image --- the default illustration for the type is shown. After upload --- the custom image is shown; it can be removed to restore the default. \sked{K31} \\
+\addlinespace
+AC-026 & REQ-F-026 & After selecting a sort parameter, the catalog is reordered; changing the parameter reorders it again. \sked{K32} \\
+\addlinespace
+AC-027 & REQ-F-027 & After selecting a sort parameter within a collection, the list is reordered. \sked{K33} \\
+\addlinespace
+AC-028 & REQ-F-028 & An attempt to upload a file of an unsupported format or larger than 5~MB --- an error message is shown and the file is not saved. \sked{K48} \\
+\addlinespace
+AC-029 & REQ-F-029 & After changing the nickname in account settings, the new name is displayed in the interface. \sked{K49} \\
+\addlinespace
+AC-030 & REQ-F-022a & The statistics page contains a time period selector: ``this month'', ``this year'', ``all time''. \sked{K51} \\
+\addlinespace
+AC-031 & REQ-NF-006 & When a password shorter than 8 characters is entered --- a specific message is shown. With an invalid email or a nickname outside 2--50 characters --- a corresponding message is shown. \sked{K46} \\
+\addlinespace
+AC-032 & REQ-NF-008 & When the catalog is empty, a collection is empty, or search results are absent, an informative message is displayed (not an empty list). \sked{K52} \\
+\addlinespace
+AC-033 & REQ-NF-009 & After running tests, a file with the results of the last run exists in the \texttt{logs/} directory. The file contains: total number of tests, count of passed~/ failed~/ skipped, status of each test (name~+ result), and execution time of the suite. \sked{K54} \\
+
+\end{longtable}

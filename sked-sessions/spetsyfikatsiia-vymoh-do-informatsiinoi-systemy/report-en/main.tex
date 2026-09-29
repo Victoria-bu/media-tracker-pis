@@ -1,0 +1,41 @@
+% !TEX program = xelatex
+\documentclass[profile=ieee,lang=en]{skedreport}
+
+\skedtitle{Software Requirements Specification for a Personal Media Content Tracking Information System}
+\skedauthor{Victoria Buksha}
+\skedaffiliation{Student, Information Systems Design Course}
+\skedorganization{}
+\skeddoctype{Software Requirements Specification}
+\skedversion{1.3.0}
+\skeddate{September 25, 2026}
+\skedudc{004.415.2}
+\skedkeywords{software requirements specification, media tracker, web application, SRS, content catalog, Socratic dialogue}
+\skedplatform{Web browser}
+
+\begin{document}
+
+\skedmaketitle
+
+\begin{abstract}
+This document is a Software Requirements Specification (SRS) for the personal media content tracking web application covering books, TV series, and films. The system is intended for registered users who maintain a personal catalog of viewed and read content. The document defines functional requirements (31~requirements), non-functional requirements (9~requirements), acceptance criteria, BDD scenarios, and a traceability matrix for version~v1 (MVP). The document was prepared using the SKED methodology (Socratic Knowledge Elicitation \& Documentation) as part of the ``Information Systems Design'' course. The MVP includes: registration and authentication, a catalog with CRUD operations, tags with autocomplete, a Sessions mechanism for recording repeated viewings, collections (many-to-many), automatic completion date fill, and personal statistics. Social interaction features, offline mode, and integration with third-party media databases are deferred to future versions.
+\end{abstract}
+
+\skedtoc
+
+\input{sections/01-introduction}
+\input{sections/02-general-description}
+\input{sections/03-glossary}
+\input{sections/methodology}
+\input{sections/04-functional-requirements}
+\input{sections/05-nonfunctional-requirements}
+\input{sections/06-acceptance-criteria}
+\input{sections/07-bdd-scenarios}
+\input{sections/08-traceability}
+
+\skedappendix
+
+\input{sections/A-out-of-scope}
+
+\skedbibliography
+
+\end{document}

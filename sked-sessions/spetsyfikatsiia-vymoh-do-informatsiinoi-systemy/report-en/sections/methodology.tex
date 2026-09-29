@@ -1,0 +1,57 @@
+\section{Development Methodology}
+\label{sec:metodolohiia}
+
+\subsection{Specification-Driven Development (SDD)}
+
+The system is developed in accordance with the Specification Driven Development (SDD) methodology. The specification is the controlling source of system behavior --- no source code may define behavior independently of this document. \sked{K53}
+
+Required process for every behavioral change:
+
+\begin{enumerate}
+  \item Update this document before making any code changes.
+  \item Assign or update a requirement identifier (REQ-F-NNN or REQ-NF-NNN).
+  \item Define an acceptance criterion (AC-NNN) for each requirement.
+  \item Write an automated test before implementation (TDD, \secref{sec:metodolohiia}).
+  \item Run the test and confirm it fails for the expected reason (Red).
+  \item Implement the minimal code that passes the test (Green).
+  \item Refactor only after tests pass (Refactor).
+  \item Update log artifacts after completing the iteration.
+\end{enumerate}
+
+\subsection{Mandatory Test-Driven Development (TDD)}
+
+TDD is mandatory for all implementation work. The Red~/ Green~/ Refactor cycle applies to every functional change: \sked{K53}
+
+\begin{itemize}
+  \item \textbf{Red} --- write a failing test first.
+  \item \textbf{Green} --- implement the minimal code that passes the test.
+  \item \textbf{Refactor} --- improve the code without changing external behavior.
+\end{itemize}
+
+No production code is accepted unless it is covered by at least one automated test. Real external systems (DBMS, third-party APIs) are not used in unit tests --- deterministic substitutes (stubs~/ mocks) are used instead.
+
+\subsection{Traceability Rule}
+
+Every implemented system behavior must have full traceability in the chain:
+
+\begin{codelisting}
+\caption{Traceability Chain}
+\label{lst:trace}
+\begin{skedcode}
+REQ -> AC -> Test -> Implementation
+\end{skedcode}
+\end{codelisting}
+
+Functionality without a requirement identifier is not part of the system. A requirement without an acceptance criterion is not ready for implementation.
+
+\subsection{Test Log Artifacts}
+
+After each test run, the development agent records a log file with the results. \sked{K54} The log file must contain:
+
+\begin{itemize}
+  \item total number of tests and the count of passed~/ failed;
+  \item the status of each individual test (passed~/ failed~/ skipped);
+  \item execution time of the test suite.
+\end{itemize}
+
+The log file is a machine-readable verification artifact --- based on it, the development agent and human reviewer determine whether the task has been completed according to the specification (the ``Is~verified?'' step in the SDLC process).

@@ -1,0 +1,56 @@
+\section{General System Description}
+\label{sec:zahalnyi-opys}
+
+\subsection{Product Overview and Perspective}
+
+The system is a standalone web application with no external service integrations within the MVP scope. Each registered user has their own isolated data space --- a catalog, collections, and statistics. The system is not part of a larger platform and does not provide a public API in version~v1. \sked{K38,K41,K42}
+
+\subsection{Functional Blocks}
+
+The system implements the following functional blocks:
+\begin{enumerate}
+  \item Authentication and account management.
+  \item Personal media content catalog.
+  \item Content item management (CRUD).
+  \item Tags and tag-based filtering.
+  \item Sessions --- recording repeated viewings or readings.
+  \item Collections --- custom named groups of items.
+  \item Automatic completion date fill.
+  \item Personal statistics.
+\end{enumerate}
+\sked{K10,K13,K16,K18,K21,K27,K28}
+
+\subsection{User Roles}
+
+Version~v1 has a single user role. No administrative role exists.
+
+\begin{table}[h]
+\caption{System User Roles}
+\label{tab:roli}
+\begin{tabular}{L{3cm} L{10cm}}
+\toprule
+\textbf{Role} & \textbf{Description} \\
+\midrule
+User & Registered account owner. Has access exclusively to their own catalog, collections, and statistics. May perform all CRUD operations on their own data. \\
+\bottomrule
+\end{tabular}
+\end{table}
+\sked{K44}
+
+\subsection{Operating Environment}
+
+The system is implemented as a web application. A native mobile application is not planned for version~v1. The system must function correctly in the latest two versions of Chrome, Firefox, Edge, and Safari browsers, including mobile Safari on iOS. The backend implementation language is not specified by this document and is determined at the architecture design stage. \sked{K38,K39,K45}
+
+\subsection{Design and Implementation Constraints}
+
+\begin{itemize}
+  \item Implementation exclusively as a web application.
+  \item Version~v1 supports only one interface language.
+  \item The system does not integrate with external media content databases (TMDB, Google Books, etc.).
+  \item Each user has access exclusively to their own data; cross-user access is not provided.
+\end{itemize}
+\sked{K38,K40,K41,K42}
+
+\subsection{MVP Boundaries --- What Is Not Included in Version~v1}
+
+The following features are technically feasible but deliberately excluded from the MVP to constrain the scope of the first release. A detailed list is provided in Appendix~A. \sked{K43,K50}
