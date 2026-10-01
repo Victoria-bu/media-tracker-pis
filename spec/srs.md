@@ -1,234 +1,471 @@
-# Специфікація вимог до програмного забезпечення (SRS)
+# Software Requirements Specification (SRS)
 
-**Назва системи:** Інформаційна система персонального обліку медіа-контенту  
-**Версія документа:** 1.0  
-**Дата:** 2026-09-18
+**System Name:** Personal Media Content Tracking Information System  
+**Document Version:** 1.3.0  
+**Date:** September 25, 2026  
+**Author:** Victoria Buksha  
+**Document Type:** Software Requirements Specification
 
----
-
-## 1. Призначення
-
-Цей документ описує вимоги до веб-застосунку персонального обліку медіа-контенту — книг, серіалів і фільмів. Система дозволяє зареєстрованому користувачеві вести особистий каталог переглянутого та прочитаного контенту: фіксувати статуси, оцінки, теги та повторні перегляди, організовувати елементи у власні добірки, переглядати особисту статистику.
-
-Документ підготовлений у рамках навчального курсу «Проектування інформаційних систем» (SDD-цикл) і охоплює scope версії v1.
+> This document was prepared using the SKED methodology (Socratic Knowledge Elicitation & Documentation) as part of the "Information Systems Design" course.
 
 ---
 
-## 2. Межі системи
+## Abstract
 
-### Входить до MVP
-
-- Реєстрація та авторизація користувача
-- Особистий каталог медіа-контенту (книги, серіали, фільми)
-- Управління елементами каталогу: додавання, редагування, видалення
-- Статуси елементів: заплановано / у процесі / завершено / відкладено
-- Оцінка (0–10) і нотатки
-- Теги — довільні мітки, задані користувачем; фільтрування каталогу за тегами
-- Sessions — фіксація кількох фактів перегляду або прочитання для одного елемента (кожна Session має дату, оцінку і нотатку)
-- Добірки — власні іменовані групи елементів каталогу (зв'язок many-to-many)
-- Автозаповнення дати завершення при зміні статусу на «завершено»
-- Особиста статистика (кількість завершеного контенту за типом і за обраний період)
-- Адаптивний веб-інтерфейс (десктоп і мобільний браузер)
-
-### Не входить до MVP
-
-- Офлайн-режим (повноцінна робота без інтернету)
-- Push- та email-сповіщення
-- Багатомовність інтерфейсу
-- Функція «друзі» та спільний доступ до добірок
-- Блок рекомендацій або «Популярне серед користувачів»
-- Інтеграція із зовнішніми базами даних (TMDB, Google Books тощо)
-- Адміністративна панель
-- Email-підтвердження при реєстрації (відправка коду на пошту)
+This document is a Software Requirements Specification (SRS) for the personal media content tracking web application covering books, TV series, and films. The system is intended for registered users who maintain a personal catalog of viewed and read content. The document defines functional requirements (30 requirements), non-functional requirements (9 requirements), acceptance criteria, BDD scenarios, and a traceability matrix for version v1 (MVP). The MVP includes: registration and authentication, a catalog with CRUD operations, tags with autocomplete, a Sessions mechanism for recording repeated viewings, collections (many-to-many), automatic completion date fill, and personal statistics. Social interaction features, offline mode, and integration with third-party media databases are deferred to future versions.
 
 ---
 
-## 3. Глосарій
+## 1. Introduction
 
-| Термін (укр.) | Англ. відповідник | Визначення |
+### 1.1 Purpose and Scope of the Document
+
+This document is a Software Requirements Specification (SRS) for the personal media content tracking information system. The purpose of this document is to formally describe the functional and non-functional requirements of the system, define the boundaries of version v1 (MVP), and provide a basis for software design documentation (SDD) and testing.
+
+### 1.2 System Purpose
+
+The system is a web application that allows a registered user to maintain a personal catalog of media content — books, TV series, and films. The application provides tracking of viewed and read content: recording statuses, ratings, notes, tags, repeated viewings (Sessions), organizing items into collections, and viewing personal statistics.
+
+### 1.3 Document Context and Audience
+
+This document was prepared as part of the "Information Systems Design" course (SDD cycle). Target audience: the course instructor and system developers. A reader of this document should obtain sufficient information to develop the system architecture and testing plan without additional clarification.
+
+### 1.4 Document Structure
+
+- Section 2 — general system description, MVP boundaries, user roles, operating environment.
+- Section 3 — key term definitions.
+- Section 4 — development methodology (SDD, TDD, traceability).
+- Section 5 — complete list of functional requirements grouped by functional blocks.
+- Section 6 — non-functional requirements: performance, security, reliability, usability, compatibility, validation.
+- Section 7 — acceptance criteria for each requirement.
+- Section 8 — BDD scenarios in Gherkin format.
+- Section 9 — requirements traceability matrix.
+- Appendix A — features outside the MVP scope.
+
+---
+
+## 2. General System Description
+
+### 2.1 Product Overview and Perspective
+
+The system is a standalone web application with no external service integrations within the MVP scope. Each registered user has their own isolated data space — a catalog, collections, and statistics. The system is not part of a larger platform and does not provide a public API in version v1.
+
+### 2.2 Functional Blocks
+
+The system implements the following functional blocks:
+
+1. Authentication and account management.
+2. Personal media content catalog.
+3. Content item management (CRUD).
+4. Tags and tag-based filtering.
+5. Sessions — recording repeated viewings or readings.
+6. Collections — custom named groups of items.
+7. Automatic completion date fill.
+8. Personal statistics.
+
+### 2.3 User Roles
+
+Version v1 has a single user role. No administrative role exists.
+
+| Role | Description |
+|---|---|
+| User | Registered account owner. Has access exclusively to their own catalog, collections, and statistics. May perform all CRUD operations on their own data. |
+
+### 2.4 Operating Environment
+
+The system is implemented as a web application. A native mobile application is not planned for version v1. The system must function correctly in the latest two versions of Chrome, Firefox, Edge, and Safari browsers, including mobile Safari on iOS. The backend implementation language is not specified by this document and is determined at the architecture design stage.
+
+### 2.5 Design and Implementation Constraints
+
+- Implementation exclusively as a web application.
+- Version v1 supports only one interface language.
+- The system does not integrate with external media content databases (TMDB, Google Books, etc.).
+- Each user has access exclusively to their own data; cross-user access is not provided.
+
+### 2.6 MVP Boundaries — What Is Not Included in Version v1
+
+The following features are technically feasible but deliberately excluded from the MVP to constrain the scope of the first release. A detailed list is provided in Appendix A.
+
+---
+
+## 3. Glossary
+
+| Term | Ukrainian Equivalent | Definition |
 |---|---|---|
-| Каталог | Catalog | Повний список усіх елементів контенту, доданих користувачем |
-| Елемент контенту | Content Item | Одна позиція в каталозі — книга, серіал або фільм із власними атрибутами (тип, статус, оцінка, теги тощо) |
-| Добірка | Collection | Створена користувачем іменована група довільних елементів каталогу; один елемент може входити до кількох добірок одночасно |
-| Session | Session | Окремий запис факту перегляду або прочитання елемента; містить дату, оцінку та нотатку; для одного елемента може бути кілька Sessions |
-| Тег | Tag | Довільна текстова мітка, яку користувач додає до елемента для категоризації |
-| Статус | Status | Поточний стан роботи з елементом: заплановано / у процесі / завершено / відкладено |
+| Catalog | Каталог | The complete list of all content items added by the user. |
+| Content Item | Елемент контенту | A single entry in the catalog — a book, TV series, or film with its own attributes (type, status, rating, tags, etc.). |
+| Collection | Добірка | A user-created named group of arbitrary catalog items; one item can belong to multiple collections simultaneously. |
+| Session | Session | An individual record of a viewing or reading of an item; contains date, rating, and note; one item can have multiple Sessions. |
+| Tag | Тег | An arbitrary text label that the user attaches to an item for categorization. |
+| Status | Статус | The current state of work on an item: *planned / in progress / completed / on hold*. |
 
 ---
 
-## 4. Ролі користувачів
+## 4. Development Methodology
 
-У MVP існує єдина роль — **Користувач (User)**. Адміністративна роль відсутня.
+### 4.1 Specification-Driven Development (SDD)
 
-| Роль | Опис |
-|---|---|
-| Користувач (User) | Зареєстрований власник акаунту. Має доступ виключно до власного каталогу, добірок і статистики. |
+The system is developed in accordance with the Specification Driven Development (SDD) methodology. The specification is the controlling source of system behavior — no source code may define behavior independently of this document.
 
----
+Required process for every behavioral change:
 
-## 5. Функціональні вимоги
+1. Update this document before making any code changes.
+2. Assign or update a requirement identifier (REQ-F-NNN or REQ-NF-NNN).
+3. Define an acceptance criterion (AC-NNN) for each requirement.
+4. Write an automated test before implementation (TDD, Section 4.2).
+5. Run the test and confirm it fails for the expected reason (Red).
+6. Implement the minimal code that passes the test (Green).
+7. Refactor only after tests pass (Refactor).
+8. Update log artifacts after completing the iteration.
 
-### Автентифікація та акаунт
+### 4.2 Mandatory Test-Driven Development (TDD)
 
-| ID | Вимога |
-|---|---|
-| REQ-F-001    | Система повинна надавати можливість реєстрації за email, паролем та нікнеймом (усі три поля — обов'язкові). Повторна реєстрація з тим самим email неможлива. |
-| REQ-F-002    | Система повинна надавати вхід до акаунту за email та паролем. |
-| REQ-F-003    | Система повинна надавати можливість виходу з акаунту. Після виходу доступ до захищених сторінок вимагає повторної авторизації. |
+TDD is mandatory for all implementation work. The Red / Green / Refactor cycle applies to every functional change:
 
-### Каталог
+- **Red** — write a failing test first.
+- **Green** — implement the minimal code that passes the test.
+- **Refactor** — improve the code without changing external behavior.
 
-| ID | Вимога |
-|---|---|
-| REQ-F-004 | Система повинна відображати особистий каталог — список усіх елементів контенту користувача. |
-| REQ-F-005 | Система повинна надавати фільтрування каталогу за типом елемента (книга / серіал / фільм). |
-| REQ-F-006 | Система повинна надавати фільтрування каталогу за статусом елемента. |
-| REQ-F-023 | Система повинна надавати пошук елементів каталогу за назвою. |
-| REQ-F-026 | Система повинна надавати сортування каталогу: за датою додавання (новіші / старіші) та за оцінкою (від вищої до нижчої і навпаки). |
+No production code is accepted unless it is covered by at least one automated test. Real external systems (DBMS, third-party APIs) are not used in unit tests — deterministic substitutes (stubs / mocks) are used instead.
 
-### Управління елементами контенту
+### 4.3 Traceability Rule
 
-| ID | Вимога |
-|---|---|
-| REQ-F-007 | Система повинна надавати можливість додавання нового елемента контенту з атрибутами: назва (обов'язково), тип (обов'язково), статус, оцінка (0–10), нотатки, теги. Форма відображає тип-специфічні необов'язкові поля (див. REQ-F-024) та поле обкладинки (див. REQ-F-025). |
-| REQ-F-008 | Система повинна надавати можливість редагування будь-якого атрибута наявного елемента контенту. |
-| REQ-F-009 | Система повинна надавати можливість видалення елемента контенту з каталогу. Видалений елемент автоматично зникає з усіх добірок. |
-| REQ-F-024 | Форма додавання та редагування елемента повинна відображати тип-специфічні необов'язкові поля залежно від обраного типу: книга — автор, кількість сторінок; серіал — кількість сезонів; фільм — режисер, тривалість. |
-| REQ-F-025 | Кожен елемент контенту повинен мати обкладинку: за замовчуванням — одна з трьох ілюстрацій відповідно до типу (книга / серіал / фільм). Користувач може замінити її власним зображенням (необов'язково). |
+Every implemented system behavior must have full traceability in the chain:
 
-### Теги
+```
+REQ -> AC -> Test -> Implementation
+```
 
-| ID | Вимога |
-|---|---|
-| REQ-F-010 | Система повинна надавати можливість додавання довільних тегів до елемента контенту. При введенні тегу система пропонує автодоповнення на основі раніше введених тегів користувача. Один елемент може мати кілька тегів. Тег можна видалити в будь-який момент. |
-| REQ-F-011 | Система повинна надавати фільтрування та пошук по каталогу за тегом. |
+Functionality without a requirement identifier is not part of the system. A requirement without an acceptance criterion is not ready for implementation.
 
-### Sessions (повторні перегляди / прочитання)
+### 4.4 Test Log Artifacts
 
-| ID | Вимога |
-|---|---|
-| REQ-F-012 | Система повинна надавати можливість фіксації кількох Sessions для одного елемента контенту; кожна Session має власні дату, оцінку та нотатку. |
-| REQ-F-013 | Система повинна відображати список усіх Sessions елемента контенту у хронологічному порядку. |
-| REQ-F-014 | Система повинна надавати можливість редагування та видалення окремої Session. |
+After each test run, the development agent records a log file with the results (REQ-NF-009). The log file must contain:
 
-### Добірки
+- total number of tests and the count of passed / failed;
+- the status of each individual test (passed / failed / skipped);
+- execution time of the test suite.
 
-| ID | Вимога |
-|---|---|
-| REQ-F-015 | Система повинна надавати можливість додавання одного елемента каталогу до кількох добірок одночасно (зв'язок many-to-many). |
-| REQ-F-016 | Система повинна надавати можливість створення нової іменованої добірки. |
-| REQ-F-017 | Система повинна надавати можливість редагування назви добірки. |
-| REQ-F-018 | Система повинна надавати можливість видалення добірки. Видалення добірки не видаляє елементи з каталогу. |
-| REQ-F-019 | Система повинна надавати можливість видалення елемента з добірки без видалення його з каталогу чи з інших добірок. |
-| REQ-F-020 | Система повинна відображати вміст добірки — список елементів, що до неї входять. |
-| REQ-F-027 | Система повинна надавати сортування елементів всередині добірки: за датою додавання (новіші / старіші) та за оцінкою (від вищої до нижчої і навпаки). |
-
-### Дата завершення
-
-| ID | Вимога |
-|---|---|
-| REQ-F-021 | При зміні статусу елемента на «завершено» поле дати завершення повинно автоматично заповнюватися поточною датою, якщо дату не введено вручну. |
-
-### Статистика
-
-| ID | Вимога |
-|---|---|
-| REQ-F-022 | Система повинна відображати особисту статистику: кількість елементів зі статусом «завершено» у розрізі типів (книги / серіали / фільми) та за обраний часовий проміжок. |
+The log file is a machine-readable verification artifact — based on it, the development agent and human reviewer determine whether the task has been completed according to the specification.
 
 ---
 
-## 6. Нефункціональні вимоги
+## 5. Functional Requirements
 
-| ID | Категорія | Вимога |
+### 5.1 Authentication and Account Management
+
+| ID | Requirement |
+|---|---|
+| REQ-F-001 | The system shall allow user registration with email, password, and nickname (all three fields are mandatory). Re-registration with the same email is not allowed. |
+| REQ-F-002 | The system shall allow account login with email and password. |
+| REQ-F-003 | The system shall allow account logout. After logout, access to protected pages requires re-authentication. |
+| REQ-F-029 | The user may change their nickname in account settings. |
+
+### 5.2 Catalog
+
+| ID | Requirement |
+|---|---|
+| REQ-F-004 | The system shall display a personal catalog — a list of all user content items. |
+| REQ-F-005 | The system shall provide catalog filtering by item type (book / TV series / film). |
+| REQ-F-006 | The system shall provide catalog filtering by item status. Available status values: "planned", "in progress", "completed", "on hold". |
+| REQ-F-023 | The system shall provide catalog item search by title. |
+| REQ-F-026 | The system shall provide catalog sorting: by date added (newest / oldest) and by rating (highest to lowest and vice versa). |
+
+### 5.3 Content Item Management
+
+| ID | Requirement |
+|---|---|
+| REQ-F-007 | The system shall allow adding a new content item with attributes: title (required), type (required), status, rating (0–10), notes, tags. The form displays type-specific optional fields (REQ-F-024) and a cover image field (REQ-F-025). |
+| REQ-F-008 | The system shall allow editing any attribute of an existing content item. |
+| REQ-F-009 | The system shall allow deleting a content item from the catalog. A deleted item is automatically removed from all collections. |
+| REQ-F-024 | The add and edit item form shall display type-specific optional fields depending on the selected type (see table below). |
+| REQ-F-025 | Each content item shall have a cover image: by default — one of three illustrations corresponding to the type. The user may replace it with their own image (optional). |
+| REQ-F-028 | Cover image formats: JPEG, PNG, WebP; maximum file size: 5 MB. The system notifies the user when limits are violated. |
+
+**Type-Specific Optional Fields:**
+
+| Type | Optional Fields |
+|---|---|
+| Book | Author, number of pages |
+| TV Series | Number of seasons |
+| Film | Director, duration |
+
+### 5.4 Tags
+
+| ID | Requirement |
+|---|---|
+| REQ-F-010 | The system shall allow adding arbitrary tags to a content item. When entering a tag, the system offers autocomplete based on the user's previously entered tags. One item can have multiple tags. A tag can be removed at any time. |
+| REQ-F-011 | The system shall provide catalog filtering and search by tag. |
+
+### 5.5 Sessions (Repeated Viewings / Readings)
+
+| ID | Requirement |
+|---|---|
+| REQ-F-012 | The system shall allow recording multiple Sessions for a single content item; each Session has its own date, rating, and note. |
+| REQ-F-013 | The system shall display the list of all Sessions of a content item in reverse chronological order (newest to oldest), with the total count. |
+| REQ-F-014 | The system shall allow editing and deleting an individual Session. |
+
+### 5.6 Collections
+
+| ID | Requirement |
+|---|---|
+| REQ-F-015 | The system shall allow adding a single catalog item to multiple collections simultaneously (many-to-many relationship). |
+| REQ-F-016 | The system shall allow creating a new named collection. |
+| REQ-F-017 | The system shall allow editing a collection name. |
+| REQ-F-018 | The system shall allow deleting a collection. Deleting a collection does not delete items from the catalog. |
+| REQ-F-019 | The system shall allow removing an item from a collection without deleting it from the catalog or other collections. |
+| REQ-F-020 | The system shall display the contents of a collection — the list of items it contains, with the name, type, and status of each. |
+| REQ-F-027 | The system shall provide sorting of items within a collection: by date added (newest / oldest) and by rating (highest to lowest and vice versa). |
+
+### 5.7 Automatic Completion Date Fill
+
+| ID | Requirement |
+|---|---|
+| REQ-F-021 | When changing an item's status to "completed", the completion date field shall be automatically filled with the current date if no date was entered manually. |
+
+### 5.8 Personal Statistics
+
+| ID | Requirement |
+|---|---|
+| REQ-F-022 | The system shall display personal statistics: the number of items with "completed" status broken down by type (books / TV series / films) and by selected time period. |
+| REQ-F-022a | Time period selection for statistics — from predefined options: "this month", "this year", "all time". |
+
+---
+
+## 6. Non-Functional Requirements
+
+### 6.1 Performance
+
+**REQ-NF-001.** System pages shall load in an acceptable time for the user under normal network connection conditions.
+
+### 6.2 Security
+
+**REQ-NF-002.** User passwords are stored exclusively in a protected form — as hashes (e.g., bcrypt). Access to protected resources requires an active authenticated session.
+
+**REQ-NF-007.** The authorization token is stored in an HTTP-only cookie to prevent XSS attacks. All requests that modify system state must be protected against CSRF attacks.
+
+### 6.3 Reliability
+
+**REQ-NF-003.** All user data is stored in the database. No user action shall result in the loss of previously entered data without explicit deletion confirmation from the user.
+
+### 6.4 Usability
+
+**REQ-NF-004.** The system's interface shall be responsive for desktop and mobile browsers. Separate tablet optimization is not planned for version v1.
+
+**REQ-NF-008.** When the catalog is empty, a collection is empty, or search / filter results are absent, the system shall display an informative message instead of an empty list.
+
+### 6.5 Compatibility
+
+**REQ-NF-005.** The system shall function correctly in the latest two versions of: Google Chrome, Mozilla Firefox, Microsoft Edge, and Apple Safari (including mobile Safari on iOS).
+
+### 6.6 Input Validation
+
+**REQ-NF-006.** During new user registration, the system shall validate:
+- email — format per RFC 5322;
+- password — minimum length of 8 characters;
+- nickname — 2 to 50 characters.
+
+If any constraint is violated, the system displays a specific error message indicating the reason for rejection.
+
+### 6.7 Development Process
+
+**REQ-NF-009.** After each test run, the development agent shall write a log file to the `logs/` directory. The log file must contain: total number of tests, passed / failed / skipped count, status of each individual test (name + result), and execution time of the test suite.
+
+---
+
+## 7. Acceptance Criteria
+
+| AC ID | Requirement | Acceptance Criterion |
 |---|---|---|
-| REQ-NF-001 | Продуктивність | Сторінки завантажуються в прийнятний для користувача час за нормальних умов роботи. |
-| REQ-NF-002 | Безпека | Паролі зберігаються виключно у захищеному вигляді (хешування). Доступ до даних користувача вимагає активної автентифікованої сесії. |
-| REQ-NF-003 | Надійність | Дані зберігаються в базі даних. Жодна дія користувача не призводить до втрати раніше введених даних без явного підтвердження видалення. |
-| REQ-NF-004 | Зручність використання | Інтерфейс адаптивний для десктопних браузерів і мобільних браузерів. Окрема оптимізація під планшет у MVP не передбачена. |
+| AC-001 | REQ-F-001 | After filling in a valid email, password, and nickname and confirming registration, the user gains access to an empty personal catalog. Re-registration with the same email is not possible: the system displays a message about an existing account. |
+| AC-002 | REQ-F-002 | After entering the correct email and password, the user is redirected to their catalog. With incorrect credentials — an error message is displayed and login does not proceed. |
+| AC-003 | REQ-F-003 | After logout, accessing protected pages redirects to the login page. Re-authentication restores access. |
+| AC-004 | REQ-F-004 | The catalog displays all added items; for each item, the title, type, status, and rating are visible. |
+| AC-005 | REQ-F-005 | When selecting type "Books", only items of type "book" are displayed; when the filter is cleared — all items are shown again. |
+| AC-006 | REQ-F-006 | When selecting status "completed", only items with that status are displayed; when cleared — all items are shown again. |
+| AC-007 | REQ-F-007 | After filling in required fields (title, type), the item appears in the catalog with its corresponding attributes and cover image. |
+| AC-008 | REQ-F-008 | After editing and saving, the updated attributes are shown in the catalog and on the item page. |
+| AC-009 | REQ-F-009 | After confirming deletion, the item disappears from the catalog and from all collections it belonged to. |
+| AC-010 | REQ-F-010 | An added tag appears on the item card. When typing in the tag field — autocomplete suggestions from previously used tags are shown. Removing a tag does not affect other attributes. |
+| AC-011 | REQ-F-011 | When filtering by tag, only items with that tag are displayed; the result updates when the filter is changed or cleared. |
+| AC-012 | REQ-F-012 | For an item with two or more Sessions — a list of all records with date, rating, and note is shown. |
+| AC-013 | REQ-F-013 | Sessions are sorted from newest to oldest; the total count is indicated. |
+| AC-014 | REQ-F-014 | After editing a Session — updated data is shown. After deletion — the session disappears and the count decreases. |
+| AC-015 | REQ-F-015 | An item is simultaneously displayed in each collection it has been added to. Removal from one collection does not affect the others. |
+| AC-016 | REQ-F-016 | After entering a name, the new empty collection appears in the collections list. |
+| AC-017 | REQ-F-017 | After saving, the new name is displayed in the list and in the page heading. |
+| AC-018 | REQ-F-018 | After confirming deletion, the collection disappears; items remain in the catalog. |
+| AC-019 | REQ-F-019 | After removing an item from a collection, it remains in the catalog and in other collections. |
+| AC-020 | REQ-F-020 | The collection page displays all items with title, type, and status. |
+| AC-021 | REQ-F-021 | If no date is entered when changing status to "completed" — the current date is automatically set. If entered manually — the entered value is saved. |
+| AC-022 | REQ-F-022 | The statistics page displays the count of completed items by type and by the selected time period. |
+| AC-023 | REQ-F-023 | When entering part of a title, the catalog displays only matching items; when cleared — all items are shown. |
+| AC-024 | REQ-F-024 | The form displays type-specific fields only after a type is selected; all fields are optional. |
+| AC-025 | REQ-F-025 | Without a custom image — the default illustration for the type is shown. After upload — the custom image is shown; it can be removed to restore the default. |
+| AC-026 | REQ-F-026 | After selecting a sort parameter, the catalog is reordered; changing the parameter reorders it again. |
+| AC-027 | REQ-F-027 | After selecting a sort parameter within a collection, the list is reordered. |
+| AC-028 | REQ-F-028 | An attempt to upload a file of an unsupported format or larger than 5 MB — an error message is shown and the file is not saved. |
+| AC-029 | REQ-F-029 | After changing the nickname in account settings, the new name is displayed in the interface. |
+| AC-030 | REQ-F-022a | The statistics page contains a time period selector: "this month", "this year", "all time". |
+| AC-031 | REQ-NF-006 | When a password shorter than 8 characters is entered — a specific message is shown. With an invalid email or a nickname outside 2–50 characters — a corresponding message is shown. |
+| AC-032 | REQ-NF-008 | When the catalog is empty, a collection is empty, or search results are absent, an informative message is displayed (not an empty list). |
+| AC-033 | REQ-NF-009 | After running tests, a file with the results of the last run exists in the `logs/` directory. The file contains: total number of tests, count of passed / failed / skipped, status of each test (name + result), and execution time of the suite. |
+| AC-034 | REQ-NF-001 | The catalog page with up to 100 items renders within 3 s on a standard broadband connection. API responses for read operations return within 500 ms under single-user load. |
+| AC-035 | REQ-NF-002 | Passwords are never stored in plain text; only a bcrypt hash is persisted in the database. Accessing any protected page without an active session redirects to the login page. |
+| AC-036 | REQ-NF-003 | No user-initiated action (add, edit, delete, status change) results in silent data loss. When a server error occurs during a write operation, the system displays an error message and the data state remains unchanged. |
+| AC-037 | REQ-NF-004 | All pages are usable and free of layout breakage on viewports from 375 px (iPhone SE) to 1440 px (desktop). No horizontal scroll appears on a 375 px viewport. |
+| AC-038 | REQ-NF-005 | All functional scenarios execute without errors in the latest two releases of Chrome, Firefox, Edge, and Safari (desktop and mobile Safari on iOS 16+). |
+| AC-039 | REQ-NF-007 | The session cookie is issued with the `HttpOnly` flag and is inaccessible via JavaScript. State-mutating requests without a valid CSRF token are rejected with HTTP 403. |
 
 ---
 
-## 7. Критерії прийняття
-
-| AC ID | Вимога | Критерій прийняття |
-|---|---|---|
-| AC-001 | REQ-F-001 | Після заповнення коректних email, пароля та нікнейму і підтвердження реєстрації користувач отримує доступ до порожнього особистого каталогу. Повторна реєстрація з тим самим email неможлива: система відображає повідомлення про існуючий акаунт. |
-| AC-002 | REQ-F-002 | Після введення правильних email і пароля користувач перенаправляється до свого каталогу. При неправильних даних відображається повідомлення про помилку, вхід не виконується. |
-| AC-003 | REQ-F-003 | Після виходу з акаунту звернення до захищених сторінок перенаправляє на сторінку входу. Повторна авторизація відновлює доступ. |
-| AC-004 | REQ-F-004 | Каталог відображає всі додані елементи користувача; для кожного видно назву, тип, статус і оцінку. |
-| AC-005 | REQ-F-005 | При виборі типу «Книги» відображаються лише елементи з типом «книга»; при скиданні фільтра — знову всі елементи. |
-| AC-006 | REQ-F-006 | При виборі статусу «завершено» відображаються лише елементи з цим статусом; при скиданні фільтра — знову всі елементи. |
-| AC-007 | REQ-F-007 | Після заповнення обов'язкових полів (назва, тип) і підтвердження елемент з'являється в каталозі з відповідними атрибутами, тегами та обкладинкою (дефолтною, якщо своя не завантажена). |
-| AC-008 | REQ-F-008 | Після редагування та збереження змінені атрибути одразу відображаються в каталозі й на сторінці елемента. |
-| AC-009 | REQ-F-009 | Після підтвердження видалення елемент більше не відображається в каталозі та зникає з усіх добірок, до яких входив. |
-| AC-010 | REQ-F-010 | Доданий тег відображається на картці елемента. При введенні тексту в поле тегу система підказує раніше використані теги. Один елемент може мати кілька тегів. Видалення тегу не впливає на інші атрибути елемента. |
-| AC-011 | REQ-F-011 | При фільтруванні за тегом «фентезі» відображаються лише елементи, позначені цим тегом; результат оновлюється при зміні або скиданні фільтра. |
-| AC-012 | REQ-F-012 | Для елемента з двома чи більше Sessions на сторінці елемента відображається список усіх записів у хронологічному порядку; кожен запис містить дату, оцінку та нотатку. |
-| AC-013 | REQ-F-013 | Sessions відсортовані від найновішої до найстарішої; загальна кількість Sessions вказана. |
-| AC-014 | REQ-F-014 | Після редагування Session оновлені дані одразу відображаються в списку. Після видалення Session вона зникає, загальна кількість зменшується. |
-| AC-015 | REQ-F-015 | Один і той самий елемент каталогу одночасно відображається в кожній добірці, до якої його додано. Видалення з однієї добірки не впливає на присутність в інших. |
-| AC-016 | REQ-F-016 | Після введення назви і підтвердження нова порожня добірка з'являється в списку добірок користувача. |
-| AC-017 | REQ-F-017 | Після збереження нової назви вона відображається в списку добірок і в заголовку сторінки цієї добірки. |
-| AC-018 | REQ-F-018 | Після підтвердження видалення добірка зникає зі списку. Елементи, що входили до неї, залишаються в каталозі без змін. |
-| AC-019 | REQ-F-019 | Після видалення елемента з добірки він зникає з її списку, але залишається в каталозі та в інших добірках. |
-| AC-020 | REQ-F-020 | Сторінка добірки відображає всі елементи, додані до неї, з назвою, типом і статусом кожного. |
-| AC-021 | REQ-F-021 | Якщо поле дати не заповнене при зміні статусу на «завершено», система автоматично підставляє поточну дату. Якщо дата введена вручну — зберігається введене значення. |
-| AC-022 | REQ-F-022 | Сторінка статистики відображає кількість завершених елементів у розрізі типів (книги / серіали / фільми) та за обраний часовий проміжок. |
-| AC-023 | REQ-F-023 | При введенні частини назви у поле пошуку каталог відображає лише елементи, назва яких містить введений рядок; при очищенні поля — знову всі елементи. |
-| AC-024 | REQ-F-024 | Форма відображає тип-специфічні поля лише після вибору типу: для книги — поля «Автор» і «Кількість сторінок»; для серіалу — «Кількість сезонів»; для фільму — «Режисер» і «Тривалість». Усі поля необов'язкові. |
-| AC-025 | REQ-F-025 | Якщо користувач не завантажив власне зображення, відображається дефолтна ілюстрація відповідно до типу елемента. Після завантаження власного зображення воно замінює дефолтне; його можна видалити, повернувшись до дефолтного. |
-| AC-026 | REQ-F-026 | Після вибору параметра сортування каталог перебудовується відповідно; при зміні параметра — перебудовується знову. |
-| AC-027 | REQ-F-027 | Після вибору параметра сортування всередині добірки список елементів перебудовується відповідно; при зміні — перебудовується знову. |
-
----
-
-## 8. BDD-сценарії
+## 8. BDD Scenarios
 
 ```gherkin
-Сценарій: Реєстрація нового користувача
-  Given відкрита сторінка реєстрації
-  And email "test@example.com" ще не зареєстрований у системі
-  When користувач вводить email "test@example.com" і пароль та підтверджує реєстрацію
-  Then користувач отримує доступ до порожнього особистого каталогу
-  And повторна спроба реєстрації з тим самим email показує повідомлення "Акаунт із цим email вже існує"
+Scenario: New user registration
+  Given the registration page is open
+  And email "test@example.com" is not yet registered in the system
+  When the user enters email "test@example.com", a password, and a nickname
+    and confirms registration
+  Then the user gains access to an empty personal catalog
+  And a repeated registration attempt with the same email shows the message
+    "An account with this email already exists"
 
-Сценарій: Вхід до акаунту з коректними даними
-  Given користувач зареєстрований у системі
-  When він вводить правильний email і пароль та натискає «Увійти»
-  Then він перенаправляється до свого особистого каталогу
-  And бачить свої раніше додані елементи
+Scenario: Login with correct credentials
+  Given the user is registered in the system
+  When they enter the correct email and password and click "Sign in"
+  Then they are redirected to their personal catalog
+  And they see their previously added items
 
-Сценарій: Повторний перегляд фільму з іншою оцінкою
-  Given елемент контенту "Фільм X" вже має одну Session з оцінкою 9
-  When користувач додає нову Session для того самого елемента з оцінкою 5 і нотаткою "на другий раз не сподобалось"
-  Then елемент контенту має дві Sessions, кожна зі своєю датою, оцінкою та нотаткою
-  And обидві оцінки зберігаються окремо, жодна не перезаписується
+Scenario: Accessing a protected page after logout
+  Given the user is logged in and viewing the catalog
+  When the user clicks "Log out"
+  Then they are redirected to the login page
+  And navigating directly to /catalog redirects back to the login page
+  And logging in again restores full access to the catalog
 
-Сценарій: Елемент належить кільком добіркам одночасно
-  Given користувач має елемент "Книга Y" у каталозі
-  And існують добірки "Улюблене" та "2026 рік"
-  When користувач додає "Книга Y" до обох добірок
-  Then "Книга Y" відображається у вмісті обох добірок
-  And видалення "Книга Y" з добірки "2026 рік" не видаляє її з "Улюблене" чи з каталогу
+Scenario: Adding a new content item to the catalog
+  Given the user is on the catalog page
+  When the user opens the "Add Item" form,
+    enters title "Dune" and selects type "Book",
+    and submits the form
+  Then the item "Dune" of type "Book" appears in the catalog
+  And the item displays the default cover illustration for books
+  And no other user's catalog is affected
 
-Сценарій: Автозаповнення дати завершення
-  Given користувач редагує елемент контенту зі статусом "у процесі"
-  When користувач змінює статус на "завершено" і не вказує дату вручну
-  Then система автоматично встановлює дату завершення рівною поточній даті
+Scenario: Deleting an item removes it from all collections
+  Given item "Interstellar" exists in the catalog
+  And "Interstellar" belongs to collections "Favourites" and "2025 Films"
+  When the user confirms deletion of "Interstellar"
+  Then "Interstellar" no longer appears in the catalog
+  And "Interstellar" no longer appears in "Favourites" or "2025 Films"
+  And both collections still exist and contain their other items
 
-Сценарій: Фільтрування каталогу за тегом
-  Given у каталозі є три елементи: два з тегом "фентезі" і один без нього
-  When користувач обирає фільтр за тегом "фентезі"
-  Then відображаються лише два елементи, позначені цим тегом
-  And при скиданні фільтра знову відображаються всі три елементи
+Scenario: Re-watching a film with a different rating
+  Given content item "Film X" already has one Session with rating 9
+  When the user adds a new Session for the same item
+    with rating 5 and note "didn't enjoy it the second time"
+  Then the content item has two Sessions, each with its own date,
+    rating, and note
+  And both ratings are stored separately, neither overwrites the other
+
+Scenario: An item belongs to multiple collections simultaneously
+  Given the user has item "Book Y" in the catalog
+  And collections "Favourites" and "2026" exist
+  When the user adds "Book Y" to both collections
+  Then "Book Y" is displayed in the contents of both collections
+  And removing "Book Y" from collection "2026" does not remove it
+    from "Favourites" or from the catalog
+
+Scenario: Automatic completion date fill
+  Given the user is editing an item with status "in progress"
+  When the user changes the status to "completed"
+    and does not enter a date manually
+  Then the system automatically sets the completion date
+    equal to the current date
+
+Scenario: Filtering the catalog by tag
+  Given the catalog contains three items: two tagged "fantasy" and one without
+  When the user selects the filter by tag "fantasy"
+  Then only the two items tagged with that tag are displayed
+  And when the filter is cleared, all three items are displayed again
+
+Scenario: Searching the catalog by partial title
+  Given the catalog contains "Dune", "Dune Messiah", and "Interstellar"
+  When the user types "dune" in the search field
+  Then only "Dune" and "Dune Messiah" are displayed
+  And when the search field is cleared, all three items appear again
+
+Scenario: Registration with invalid input is rejected
+  Given the registration page is open
+  When the user submits the form with password "abc" (fewer than 8 characters)
+  Then the form is not submitted
+  And the message "Password must be at least 8 characters" is shown
+  When the user submits with a malformed email "notanemail"
+  Then a message about an invalid email format is shown
+  When the user submits with a nickname of 1 character
+  Then a message about nickname length (2–50 characters) is shown
 ```
 
 ---
 
-## 9. Обмеження
+## 9. Requirements Traceability Matrix
 
-- Реалізується у вигляді веб-застосунку; нативний мобільний застосунок не передбачений.
-- Мова реалізації бекенду цим документом не регламентується — визначається на етапі проектування архітектури.
-- У MVP підтримується лише один мовний інтерфейс.
-- Система не інтегрується із зовнішніми базами даних медіа-контенту.
-- Кожен користувач має доступ виключно до власних даних.
+| Requirement ID | Acceptance Criterion | BDD Scenario | Ticket | Test | Code | Documentation |
+|---|---|---|---|---|---|---|
+| REQ-F-001 | AC-001 | New User Registration | — | — | — | — |
+| REQ-F-002 | AC-002 | Account Login | — | — | — | — |
+| REQ-F-003 | AC-003 | Logout and Protected Page Access | — | — | — | — |
+| REQ-F-004 | AC-004 | — | — | — | — | — |
+| REQ-F-005 | AC-005 | — | — | — | — | — |
+| REQ-F-006 | AC-006 | — | — | — | — | — |
+| REQ-F-007 | AC-007 | Adding a New Item | — | — | — | — |
+| REQ-F-008 | AC-008 | — | — | — | — | — |
+| REQ-F-009 | AC-009 | Deleting an Item with Cascade Removal | — | — | — | — |
+| REQ-F-010 | AC-010 | — | — | — | — | — |
+| REQ-F-011 | AC-011 | Filtering by Tag | — | — | — | — |
+| REQ-F-012 | AC-012 | Repeated Viewing with a Different Rating | — | — | — | — |
+| REQ-F-013 | AC-013 | — | — | — | — | — |
+| REQ-F-014 | AC-014 | — | — | — | — | — |
+| REQ-F-015 | AC-015 | Item in Multiple Collections | — | — | — | — |
+| REQ-F-016 | AC-016 | — | — | — | — | — |
+| REQ-F-017 | AC-017 | — | — | — | — | — |
+| REQ-F-018 | AC-018 | — | — | — | — | — |
+| REQ-F-019 | AC-019 | Item in Multiple Collections | — | — | — | — |
+| REQ-F-020 | AC-020 | — | — | — | — | — |
+| REQ-F-021 | AC-021 | Automatic Completion Date Fill | — | — | — | — |
+| REQ-F-022 | AC-022 | — | — | — | — | — |
+| REQ-F-022a | AC-030 | — | — | — | — | — |
+| REQ-F-023 | AC-023 | Searching by Partial Title | — | — | — | — |
+| REQ-F-024 | AC-024 | — | — | — | — | — |
+| REQ-F-025 | AC-025 | — | — | — | — | — |
+| REQ-F-026 | AC-026 | — | — | — | — | — |
+| REQ-F-027 | AC-027 | — | — | — | — | — |
+| REQ-F-028 | AC-028 | — | — | — | — | — |
+| REQ-F-029 | AC-029 | — | — | — | — | — |
+| REQ-NF-001 | AC-034 | — | — | — | — | — |
+| REQ-NF-002 | AC-035 | — | — | — | — | — |
+| REQ-NF-003 | AC-036 | — | — | — | — | — |
+| REQ-NF-004 | AC-037 | — | — | — | — | — |
+| REQ-NF-005 | AC-038 | — | — | — | — | — |
+| REQ-NF-006 | AC-031 | Registration Input Validation | — | — | — | — |
+| REQ-NF-007 | AC-039 | — | — | — | — | — |
+| REQ-NF-008 | AC-032 | — | — | — | — | — |
+| REQ-NF-009 | AC-033 | — | — | — | — | — |
+
+---
+
+## Appendix A: Features Outside the MVP Scope
+
+The following features are deliberately excluded from version v1 to constrain the scope of the first release. They may be considered for future versions of the system.
+
+- Offline mode — full operation without an internet connection.
+- Push and email notifications.
+- Multi-language interface.
+- "Friends" feature — mutual subscriptions, shared access to collections.
+- Recommendations block or "Popular among users".
+- Integration with external media content databases (TMDB, Google Books, etc.).
+- Administrative panel.
+- Email confirmation at registration (sending a verification code by email).
+- Changing email address and changing password in account settings.
+- Account deletion by the user.
