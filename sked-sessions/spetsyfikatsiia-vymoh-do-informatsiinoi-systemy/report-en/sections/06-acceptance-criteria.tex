@@ -82,5 +82,17 @@ AC-031 & REQ-NF-006 & When a password shorter than 8 characters is entered --- a
 AC-032 & REQ-NF-008 & When the catalog is empty, a collection is empty, or search results are absent, an informative message is displayed (not an empty list). \sked{K52} \\
 \addlinespace
 AC-033 & REQ-NF-009 & After running tests, a file with the results of the last run exists in the \texttt{logs/} directory. The file contains: total number of tests, count of passed~/ failed~/ skipped, status of each test (name~+ result), and execution time of the suite. \sked{K54} \\
+\addlinespace
+AC-034 & REQ-NF-001 & The catalog page with up to 100 items renders within 3~s on a standard broadband connection. API responses for read operations return within 500~ms under single-user load. \\
+\addlinespace
+AC-035 & REQ-NF-002 & Passwords are never stored in plain text; only a bcrypt hash is persisted in the database. Accessing any protected page without an active session redirects to the login page. \\
+\addlinespace
+AC-036 & REQ-NF-003 & No user-initiated action (add, edit, delete, status change) results in silent data loss. When a server error occurs during a write operation, the system displays an error message and the data state remains unchanged. \\
+\addlinespace
+AC-037 & REQ-NF-004 & All pages are usable and free of layout breakage on viewports from 375~px (iPhone~SE) to 1440~px (desktop). No horizontal scroll appears on a 375~px viewport. \\
+\addlinespace
+AC-038 & REQ-NF-005 & All functional scenarios execute without errors in the latest two releases of Chrome, Firefox, Edge, and Safari (desktop and mobile Safari on iOS~16+). \\
+\addlinespace
+AC-039 & REQ-NF-007 & The session cookie is issued with the \texttt{HttpOnly} flag and is inaccessible via JavaScript. State-mutating requests without a valid CSRF token are rejected with HTTP~403. \\
 
 \end{longtable}

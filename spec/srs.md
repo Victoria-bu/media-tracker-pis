@@ -242,7 +242,7 @@ The log file is a machine-readable verification artifact — based on it, the de
 
 **REQ-NF-002.** User passwords are stored exclusively in a protected form — as hashes (e.g., bcrypt). Access to protected resources requires an active authenticated session.
 
-**REQ-NF-007.** The authorization token is stored in an HTTP-only cookie to prevent XSS attacks. All requests that modify system state must be protected against CSRF attacks.
+**REQ-NF-007.** The authorization token is stored in an HTTP-only cookie to prevent client-side script access.
 
 ### 6.3 Reliability
 
@@ -250,7 +250,7 @@ The log file is a machine-readable verification artifact — based on it, the de
 
 ### 6.4 Usability
 
-**REQ-NF-004.** The system's interface shall be responsive for desktop and mobile browsers. Separate tablet optimization is not planned for version v1.
+**REQ-NF-004.** The system's interface shall be optimized for mobile viewports (375–428 px). Desktop-specific layout optimization is not planned for version v1; the interface remains functionally accessible but is not visually optimized on larger screens.
 
 **REQ-NF-008.** When the catalog is empty, a collection is empty, or search / filter results are absent, the system shall display an informative message instead of an empty list.
 
@@ -313,9 +313,9 @@ If any constraint is violated, the system displays a specific error message indi
 | AC-034 | REQ-NF-001 | The catalog page with up to 100 items renders within 3 s on a standard broadband connection. API responses for read operations return within 500 ms under single-user load. |
 | AC-035 | REQ-NF-002 | Passwords are never stored in plain text; only a bcrypt hash is persisted in the database. Accessing any protected page without an active session redirects to the login page. |
 | AC-036 | REQ-NF-003 | No user-initiated action (add, edit, delete, status change) results in silent data loss. When a server error occurs during a write operation, the system displays an error message and the data state remains unchanged. |
-| AC-037 | REQ-NF-004 | All pages are usable and free of layout breakage on viewports from 375 px (iPhone SE) to 1440 px (desktop). No horizontal scroll appears on a 375 px viewport. |
-| AC-038 | REQ-NF-005 | All functional scenarios execute without errors in the latest two releases of Chrome, Firefox, Edge, and Safari (desktop and mobile Safari on iOS 16+). |
-| AC-039 | REQ-NF-007 | The session cookie is issued with the `HttpOnly` flag and is inaccessible via JavaScript. State-mutating requests without a valid CSRF token are rejected with HTTP 403. |
+| AC-037 | REQ-NF-004 | All pages are usable and free of layout breakage on mobile viewports from 375 px to 428 px. No horizontal scroll appears at 375 px. |
+| AC-038 | REQ-NF-005 | All functional scenarios execute without errors in the latest two releases of Chrome, and Safari (mobile Safari on iOS 16+). |
+| AC-039 | REQ-NF-007 | The session cookie is issued with the `HttpOnly` flag and is inaccessible via JavaScript. |
 
 ---
 
@@ -413,45 +413,45 @@ Scenario: Registration with invalid input is rejected
 
 | Requirement ID | Acceptance Criterion | BDD Scenario | Ticket | Test | Code | Documentation |
 |---|---|---|---|---|---|---|
-| REQ-F-001 | AC-001 | New User Registration | — | — | — | — |
-| REQ-F-002 | AC-002 | Account Login | — | — | — | — |
-| REQ-F-003 | AC-003 | Logout and Protected Page Access | — | — | — | — |
-| REQ-F-004 | AC-004 | — | — | — | — | — |
-| REQ-F-005 | AC-005 | — | — | — | — | — |
-| REQ-F-006 | AC-006 | — | — | — | — | — |
-| REQ-F-007 | AC-007 | Adding a New Item | — | — | — | — |
-| REQ-F-008 | AC-008 | — | — | — | — | — |
-| REQ-F-009 | AC-009 | Deleting an Item with Cascade Removal | — | — | — | — |
-| REQ-F-010 | AC-010 | — | — | — | — | — |
-| REQ-F-011 | AC-011 | Filtering by Tag | — | — | — | — |
-| REQ-F-012 | AC-012 | Repeated Viewing with a Different Rating | — | — | — | — |
-| REQ-F-013 | AC-013 | — | — | — | — | — |
-| REQ-F-014 | AC-014 | — | — | — | — | — |
-| REQ-F-015 | AC-015 | Item in Multiple Collections | — | — | — | — |
-| REQ-F-016 | AC-016 | — | — | — | — | — |
-| REQ-F-017 | AC-017 | — | — | — | — | — |
-| REQ-F-018 | AC-018 | — | — | — | — | — |
-| REQ-F-019 | AC-019 | Item in Multiple Collections | — | — | — | — |
-| REQ-F-020 | AC-020 | — | — | — | — | — |
-| REQ-F-021 | AC-021 | Automatic Completion Date Fill | — | — | — | — |
-| REQ-F-022 | AC-022 | — | — | — | — | — |
-| REQ-F-022a | AC-030 | — | — | — | — | — |
-| REQ-F-023 | AC-023 | Searching by Partial Title | — | — | — | — |
-| REQ-F-024 | AC-024 | — | — | — | — | — |
-| REQ-F-025 | AC-025 | — | — | — | — | — |
-| REQ-F-026 | AC-026 | — | — | — | — | — |
-| REQ-F-027 | AC-027 | — | — | — | — | — |
-| REQ-F-028 | AC-028 | — | — | — | — | — |
-| REQ-F-029 | AC-029 | — | — | — | — | — |
-| REQ-NF-001 | AC-034 | — | — | — | — | — |
-| REQ-NF-002 | AC-035 | — | — | — | — | — |
-| REQ-NF-003 | AC-036 | — | — | — | — | — |
-| REQ-NF-004 | AC-037 | — | — | — | — | — |
-| REQ-NF-005 | AC-038 | — | — | — | — | — |
-| REQ-NF-006 | AC-031 | Registration Input Validation | — | — | — | — |
-| REQ-NF-007 | AC-039 | — | — | — | — | — |
-| REQ-NF-008 | AC-032 | — | — | — | — | — |
-| REQ-NF-009 | AC-033 | — | — | — | — | — |
+| REQ-F-001 | AC-001 | New User Registration | 1 | — | — | — |
+| REQ-F-002 | AC-002 | Account Login | 1 | — | — | — |
+| REQ-F-003 | AC-003 | Logout and Protected Page Access | 1 | — | — | — |
+| REQ-F-004 | AC-004 | — | 2 | — | — | — |
+| REQ-F-005 | AC-005 | — | 2 | — | — | — |
+| REQ-F-006 | AC-006 | — | 2 | — | — | — |
+| REQ-F-007 | AC-007 | Adding a New Item | 2 | — | — | — |
+| REQ-F-008 | AC-008 | — | 2 | — | — | — |
+| REQ-F-009 | AC-009 | Deleting an Item with Cascade Removal | 2 | — | — | — |
+| REQ-F-010 | AC-010 | — | 3 | — | — | — |
+| REQ-F-011 | AC-011 | Filtering by Tag | 3 | — | — | — |
+| REQ-F-012 | AC-012 | Repeated Viewing with a Different Rating | 3 | — | — | — |
+| REQ-F-013 | AC-013 | — | 3 | — | — | — |
+| REQ-F-014 | AC-014 | — | 3 | — | — | — |
+| REQ-F-015 | AC-015 | Item in Multiple Collections | 3 | — | — | — |
+| REQ-F-016 | AC-016 | — | 3 | — | — | — |
+| REQ-F-017 | AC-017 | — | 3 | — | — | — |
+| REQ-F-018 | AC-018 | — | 3 | — | — | — |
+| REQ-F-019 | AC-019 | Item in Multiple Collections | 3 | — | — | — |
+| REQ-F-020 | AC-020 | — | 3 | — | — | — |
+| REQ-F-021 | AC-021 | Automatic Completion Date Fill | 4 | — | — | — |
+| REQ-F-022 | AC-022 | — | 4 | — | — | — |
+| REQ-F-022a | AC-030 | — | 4 | — | — | — |
+| REQ-F-023 | AC-023 | Searching by Partial Title | 2 | — | — | — |
+| REQ-F-024 | AC-024 | — | 2 | — | — | — |
+| REQ-F-025 | AC-025 | — | 2 | — | — | — |
+| REQ-F-026 | AC-026 | — | 2 | — | — | — |
+| REQ-F-027 | AC-027 | — | 3 | — | — | — |
+| REQ-F-028 | AC-028 | — | 2 | — | — | — |
+| REQ-F-029 | AC-029 | — | 1 | — | — | — |
+| REQ-NF-001 | AC-034 | — | 4 | — | — | — |
+| REQ-NF-002 | AC-035 | — | 1 | — | — | — |
+| REQ-NF-003 | AC-036 | — | 4 | — | — | — |
+| REQ-NF-004 | AC-037 | — | 4 | — | — | — |
+| REQ-NF-005 | AC-038 | — | 4 | — | — | — |
+| REQ-NF-006 | AC-031 | Registration Input Validation | 1 | — | — | — |
+| REQ-NF-007 | AC-039 | — | 1 | — | — | — |
+| REQ-NF-008 | AC-032 | — | 4 | — | — | — |
+| REQ-NF-009 | AC-033 | — | 4 | — | — | — |
 
 ---
 

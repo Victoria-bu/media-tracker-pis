@@ -33,6 +33,51 @@ Scenario: Login with correct credentials
 \sked{K8}
 
 \begin{codelisting}
+\caption{Logout and Protected Page Access}
+\label{lst:bdd-logout}
+\begin{skedcode}
+Scenario: Accessing a protected page after logout
+  Given the user is logged in and viewing the catalog
+  When the user clicks "Log out"
+  Then they are redirected to the login page
+  And navigating directly to /catalog redirects back to the login page
+  And logging in again restores full access to the catalog
+\end{skedcode}
+\end{codelisting}
+\sked{K9}
+
+\begin{codelisting}
+\caption{Adding a New Item}
+\label{lst:bdd-add}
+\begin{skedcode}
+Scenario: Adding a new content item to the catalog
+  Given the user is on the catalog page
+  When the user opens the "Add Item" form,
+    enters title "Dune" and selects type "Book",
+    and submits the form
+  Then the item "Dune" of type "Book" appears in the catalog
+  And the item displays the default cover illustration for books
+  And no other user's catalog is affected
+\end{skedcode}
+\end{codelisting}
+\sked{K13}
+
+\begin{codelisting}
+\caption{Deleting an Item with Cascade Removal}
+\label{lst:bdd-delete}
+\begin{skedcode}
+Scenario: Deleting an item removes it from all collections
+  Given item "Interstellar" exists in the catalog
+  And "Interstellar" belongs to collections "Favourites" and "2025 Films"
+  When the user confirms deletion of "Interstellar"
+  Then "Interstellar" no longer appears in the catalog
+  And "Interstellar" no longer appears in "Favourites" or "2025 Films"
+  And both collections still exist and contain their other items
+\end{skedcode}
+\end{codelisting}
+\sked{K15}
+
+\begin{codelisting}
 \caption{Repeated Viewing with a Different Rating}
 \label{lst:bdd-session}
 \begin{skedcode}
@@ -88,3 +133,33 @@ Scenario: Filtering the catalog by tag
 \end{skedcode}
 \end{codelisting}
 \sked{K17}
+
+\begin{codelisting}
+\caption{Searching by Partial Title}
+\label{lst:bdd-search}
+\begin{skedcode}
+Scenario: Searching the catalog by partial title
+  Given the catalog contains "Dune", "Dune Messiah", and "Interstellar"
+  When the user types "dune" in the search field
+  Then only "Dune" and "Dune Messiah" are displayed
+  And when the search field is cleared, all three items appear again
+\end{skedcode}
+\end{codelisting}
+\sked{K29}
+
+\begin{codelisting}
+\caption{Registration Input Validation}
+\label{lst:bdd-validation}
+\begin{skedcode}
+Scenario: Registration with invalid input is rejected
+  Given the registration page is open
+  When the user submits the form with password "abc" (fewer than 8 characters)
+  Then the form is not submitted
+  And the message "Password must be at least 8 characters" is shown
+  When the user submits with a malformed email "notanemail"
+  Then a message about an invalid email format is shown
+  When the user submits with a nickname of 1 character
+  Then a message about nickname length (2--50 characters) is shown
+\end{skedcode}
+\end{codelisting}
+\sked{K46}

@@ -1,0 +1,9 @@
+{
+  "name": "sked",
+  "version": "0.1.0",
+  "description": "SKED (Socratic Knowledge Elicitation & Documentation): turns a human expert's knowledge into a formal LaTeX/PDF technical document through a Socratic dialogue with a tracked knowledge ledger, a measurable convergence criterion, human-confirmed consensus K*, an agreed structure, Cyrillic-ready XeLaTeX builds in IEEE, DSTU or APA style, and a Q(R) quality gate with an independent coherence review.",
+  "author": {
+    "name": "Kostiantyn Kharchenko"
+  },
+  "keywords": ["sked", "socratic-dialogue", "knowledge-elicitation", "technical-report", "latex", "xelatex", "dstu", "ieee", "apa", "ukrainian"]
+}

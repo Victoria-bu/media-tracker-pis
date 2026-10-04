@@ -1,0 +1,36 @@
+% !TEX program = xelatex
+% SKED document (Socratic Knowledge Elicitation & Documentation), phase 5.
+% Build: python3 <plugin>/scripts/build.py --dir .   (or: xelatex main; xelatex main)
+% Every paragraph that carries knowledge from K* ends with \sked{K..} tags.
+% Add the `review` class option to see those tags in the margin.
+\documentclass[profile=@@PROFILE@@,lang=@@LANG@@]{skedreport}
+
+\skedtitle{@@TITLE@@}
+\skedsubtitle{@@SUBTITLE@@}
+\skedauthor{@@AUTHOR@@}
+\skedaffiliation{@@AFFILIATION@@}
+\skedorganization{@@ORGANIZATION@@}
+\skeddoctype{@@DOCTYPE@@}
+\skedversion{@@VERSION@@}
+\skeddate{@@DATE@@}
+\skedcity{@@CITY@@}
+\skedudc{@@UDC@@}
+\skedkeywords{@@KEYWORDS@@}
+\skedplatform{@@PLATFORM@@}
+
+\begin{document}
+
+\skedmaketitle
+
+\begin{abstract}
+% Abstract: 120-250 words, written last, only from K*.
+\end{abstract}
+
+\skedtoc
+
+% One file per top-level section, in the order agreed in structure.md.
+% \input{sections/01-introduction}
+
+\skedbibliography
+
+\end{document}
