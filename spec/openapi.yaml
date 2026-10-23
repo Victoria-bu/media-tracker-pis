@@ -1,0 +1,1108 @@
+openapi: 3.0.3
+
+info:
+  title: Personal Media Content Tracking API
+  version: 1.0.0
+  description: >
+    REST API for the Personal Media Content Tracking Information System (v1 MVP).
+    Source of requirements: spec/srs.md.
+    Authentication uses an HTTP-only session cookie (REQ-NF-007).
+    All endpoints except /auth/register and /auth/login require a valid session.
+
+servers:
+  - url: /api/v1
+    description: Application server
+
+tags:
+  - name: Auth
+    description: Registration, login, logout — REQ-F-001, F-002, F-003
+  - name: User
+    description: User profile management — REQ-F-029
+  - name: Item
+    description: Catalog items (books, TV series, films) — REQ-F-004–009, F-023–028
+  - name: Tag
+    description: Tag autocomplete — REQ-F-010
+  - name: Session
+    description: Repeated viewing / reading records — REQ-F-012–014
+  - name: Collection
+    description: Named groups of catalog items — REQ-F-015–020, F-027
+  - name: Stats
+    description: Personal statistics — REQ-F-022, F-022a
+
+security:
+  - cookieAuth: []
+
+components:
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: HTTP-only session cookie (REQ-NF-007)
+
+  parameters:
+    ItemId:
+      name: id
+      in: path
+      required: true
+      description: Item UUID
+      schema:
+        type: string
+        format: uuid
+
+    SessionId:
+      name: sid
+      in: path
+      required: true
+      description: Session UUID
+      schema:
+        type: string
+        format: uuid
+
+    CollectionId:
+      name: id
+      in: path
+      required: true
+      description: Collection UUID
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    Unauthorized:
+      description: Not authenticated — no valid session cookie
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNAUTHORIZED
+            message: Authentication required
+
+    NotFound:
+      description: Resource not found or belongs to another user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: Resource not found
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: VALIDATION_ERROR
+            message: Validation failed
+            field: email
+
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+
+    # ── Error ────────────────────────────────────────────────────────────────
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error identifier
+          example: PASSWORD_TOO_SHORT
+        message:
+          type: string
+          description: Human-readable error description
+          example: Пароль має містити щонайменше 8 символів
+        field:
+          type: string
+          description: >
+            Always present for 400 (validation errors).
+            Present for 409 when conflict is field-specific (e.g. EMAIL_TAKEN → "email").
+            Absent for 401 and 404.
+          example: password
+
+    # ── Enums ────────────────────────────────────────────────────────────────
+    ItemType:
+      type: string
+      enum:
+        - book
+        - series
+        - film
+
+    ItemStatus:
+      type: string
+      enum:
+        - planned
+        - in_progress
+        - completed
+        - on_hold
+
+    StatsPeriod:
+      type: string
+      enum:
+        - month
+        - year
+        - all
+
+    # ── Domain schemas ───────────────────────────────────────────────────────
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - nickname
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        nickname:
+          type: string
+          minLength: 2
+          maxLength: 50
+
+    Item:
+      type: object
+      required:
+        - id
+        - title
+        - type
+        - status
+        - tags
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          $ref: '#/components/schemas/ItemType'
+        status:
+          $ref: '#/components/schemas/ItemStatus'
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 10
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        coverUrl:
+          type: string
+          nullable: true
+          description: "null — display type-specific default illustration on the client (REQ-F-025)"
+        completedAt:
+          type: string
+          format: date
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        author:
+          type: string
+          nullable: true
+          description: Book only (REQ-F-024)
+        pages:
+          type: integer
+          nullable: true
+          description: Book only (REQ-F-024)
+        seasons:
+          type: integer
+          nullable: true
+          description: TV series only (REQ-F-024)
+        director:
+          type: string
+          nullable: true
+          description: Film only (REQ-F-024)
+        duration:
+          type: integer
+          nullable: true
+          description: "Film only, minutes (REQ-F-024)"
+
+    Session:
+      type: object
+      required:
+        - id
+        - itemId
+        - date
+      properties:
+        id:
+          type: string
+          format: uuid
+        itemId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 10
+          nullable: true
+        note:
+          type: string
+          nullable: true
+
+    Collection:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    CollectionItem:
+      description: Abbreviated item representation used inside CollectionDetail
+      type: object
+      required:
+        - id
+        - title
+        - type
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          $ref: '#/components/schemas/ItemType'
+        status:
+          $ref: '#/components/schemas/ItemStatus'
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 10
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    CollectionDetail:
+      allOf:
+        - $ref: '#/components/schemas/Collection'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CollectionItem'
+
+    Stats:
+      type: object
+      description: >
+        Counts items with status=completed, filtered by Item.completedAt
+        (not by Session date).
+      required:
+        - period
+        - books
+        - series
+        - films
+        - total
+      properties:
+        period:
+          $ref: '#/components/schemas/StatsPeriod'
+        books:
+          type: integer
+        series:
+          type: integer
+        films:
+          type: integer
+        total:
+          type: integer
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+
+paths:
+
+  # Auth ──────────────────────────────────────────────────────────────────────
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user account
+      operationId: registerUser
+      x-req-id: REQ-F-001
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, nickname]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                nickname:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+      responses:
+        '201':
+          description: User registered; HTTP-only session cookie set
+          headers:
+            Set-Cookie:
+              description: HTTP-only session cookie (REQ-NF-007)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already registered (REQ-F-001)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: EMAIL_TAKEN
+                message: Обліковий запис з цією адресою вже існує
+                field: email
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in with email and password
+      operationId: loginUser
+      x-req-id: REQ-F-002
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful; HTTP-only session cookie set
+          headers:
+            Set-Cookie:
+              description: HTTP-only session cookie (REQ-NF-007)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: INVALID_CREDENTIALS
+                message: Невірний email або пароль
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out and invalidate the session cookie
+      operationId: logoutUser
+      x-req-id: REQ-F-003
+      responses:
+        '204':
+          description: Logged out successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # User ──────────────────────────────────────────────────────────────────────
+
+  /users/me:
+    patch:
+      tags: [User]
+      summary: Update the current user's nickname
+      operationId: updateNickname
+      x-req-id: REQ-F-029
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nickname]
+              properties:
+                nickname:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+      responses:
+        '200':
+          description: Nickname updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Item ──────────────────────────────────────────────────────────────────────
+
+  /items:
+    get:
+      tags: [Item]
+      summary: Get the full catalog
+      operationId: listItems
+      x-req-id: REQ-F-004
+      description: >
+        Returns all items for the current user.
+        Filtering by type (F-005), status (F-006), tag (F-011),
+        title search (F-023), and sorting (F-026) are client-side;
+        no query parameters are accepted.
+      responses:
+        '200':
+          description: Full catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Item]
+      summary: Add a new item to the catalog
+      operationId: createItem
+      x-req-id: REQ-F-007
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, type]
+              properties:
+                title:
+                  type: string
+                type:
+                  $ref: '#/components/schemas/ItemType'
+                status:
+                  $ref: '#/components/schemas/ItemStatus'
+                rating:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+                notes:
+                  type: string
+                  nullable: true
+                tags:
+                  type: array
+                  items:
+                    type: string
+                completedAt:
+                  type: string
+                  format: date
+                  nullable: true
+                author:
+                  type: string
+                  nullable: true
+                pages:
+                  type: integer
+                  nullable: true
+                seasons:
+                  type: integer
+                  nullable: true
+                director:
+                  type: string
+                  nullable: true
+                duration:
+                  type: integer
+                  nullable: true
+      responses:
+        '201':
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+
+    get:
+      tags: [Item]
+      summary: Get a single catalog item
+      operationId: getItem
+      x-req-id: "REQ-F-004, REQ-F-008"
+      responses:
+        '200':
+          description: Item found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Item]
+      summary: Edit a catalog item
+      operationId: updateItem
+      x-req-id: REQ-F-008
+      description: >
+        Updates any subset of item fields (all optional).
+        The completedAt value is set by the client form (REQ-F-021)
+        and persisted here unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                type:
+                  $ref: '#/components/schemas/ItemType'
+                status:
+                  $ref: '#/components/schemas/ItemStatus'
+                rating:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+                notes:
+                  type: string
+                  nullable: true
+                tags:
+                  type: array
+                  items:
+                    type: string
+                completedAt:
+                  type: string
+                  format: date
+                  nullable: true
+                author:
+                  type: string
+                  nullable: true
+                pages:
+                  type: integer
+                  nullable: true
+                seasons:
+                  type: integer
+                  nullable: true
+                director:
+                  type: string
+                  nullable: true
+                duration:
+                  type: integer
+                  nullable: true
+      responses:
+        '200':
+          description: Item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Item]
+      summary: Delete a catalog item
+      operationId: deleteItem
+      x-req-id: REQ-F-009
+      description: >
+        Deletes the item and cascades: removes it from all collections (REQ-F-009).
+      responses:
+        '204':
+          description: Item deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{id}/cover:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+
+    post:
+      tags: [Item]
+      summary: Upload a custom cover image
+      operationId: uploadCover
+      x-req-id: "REQ-F-025, REQ-F-028"
+      description: >
+        Replaces the cover with a user-supplied image (200 — replacement, not creation).
+        Accepted: JPEG, PNG, WebP; maximum size 5 MB (REQ-F-028).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "JPEG, PNG or WebP; max 5 MB"
+      responses:
+        '200':
+          description: Cover replaced
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [coverUrl]
+                properties:
+                  coverUrl:
+                    type: string
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Item]
+      summary: Remove custom cover and restore type-specific default
+      operationId: deleteCover
+      x-req-id: REQ-F-025
+      description: >
+        Removes the uploaded image; the client then shows the default
+        illustration for the item type (REQ-F-025).
+      responses:
+        '204':
+          description: Custom cover removed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Tag ───────────────────────────────────────────────────────────────────────
+
+  /tags:
+    get:
+      tags: [Tag]
+      summary: Get all tags used by the current user
+      operationId: listTags
+      x-req-id: REQ-F-010
+      description: >
+        Returns a deduplicated list of all tags across the user's catalog.
+        Used for autocomplete suggestions on the tag input (REQ-F-010).
+      responses:
+        '200':
+          description: Tag list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: [fantasy, sci-fi, drama]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Session ───────────────────────────────────────────────────────────────────
+
+  /items/{id}/sessions:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+
+    get:
+      tags: [Session]
+      summary: Get all sessions of an item
+      operationId: listSessions
+      x-req-id: REQ-F-013
+      description: >
+        Returns sessions sorted newest first; includes total count (REQ-F-013).
+        Order is determined server-side.
+      responses:
+        '200':
+          description: Session list with total count
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sessions, total]
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Session'
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Session]
+      summary: Add a session to an item
+      operationId: createSession
+      x-req-id: REQ-F-012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date]
+              properties:
+                date:
+                  type: string
+                  format: date
+                rating:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{id}/sessions/{sid}:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+      - $ref: '#/components/parameters/SessionId'
+
+    patch:
+      tags: [Session]
+      summary: Edit a session
+      operationId: updateSession
+      x-req-id: REQ-F-014
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                rating:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Session updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Session]
+      summary: Delete a session
+      operationId: deleteSession
+      x-req-id: REQ-F-014
+      responses:
+        '204':
+          description: Session deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Collection ────────────────────────────────────────────────────────────────
+
+  /collections:
+    get:
+      tags: [Collection]
+      summary: Get all collections
+      operationId: listCollections
+      x-req-id: "REQ-F-016, REQ-F-020"
+      responses:
+        '200':
+          description: Collection list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Collection'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Collection]
+      summary: Create a new collection
+      operationId: createCollection
+      x-req-id: REQ-F-016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Collection created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /collections/{id}:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+
+    get:
+      tags: [Collection]
+      summary: Get collection contents
+      operationId: getCollection
+      x-req-id: REQ-F-020
+      description: >
+        Returns the collection with its items (id, title, type, status, rating, createdAt).
+        Sorting within the collection is client-side (REQ-F-027).
+      responses:
+        '200':
+          description: Collection with items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Collection]
+      summary: Rename a collection
+      operationId: updateCollection
+      x-req-id: REQ-F-017
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Collection renamed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Collection]
+      summary: Delete a collection
+      operationId: deleteCollection
+      x-req-id: REQ-F-018
+      description: >
+        Deletes the collection only; catalog items are not affected (REQ-F-018).
+      responses:
+        '204':
+          description: Collection deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collections/{id}/items:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+
+    post:
+      tags: [Collection]
+      summary: Add a catalog item to the collection
+      operationId: addItemToCollection
+      x-req-id: REQ-F-015
+      description: >
+        Creates a many-to-many membership record (201).
+        One item may belong to multiple collections simultaneously (REQ-F-015).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [itemId]
+              properties:
+                itemId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Item added to collection
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [itemId, collectionId]
+                properties:
+                  itemId:
+                    type: string
+                    format: uuid
+                  collectionId:
+                    type: string
+                    format: uuid
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Item already in this collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: ITEM_ALREADY_IN_COLLECTION
+                message: Елемент вже є в цій добірці
+
+  /collections/{id}/items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+      - name: itemId
+        in: path
+        required: true
+        description: Item UUID to remove from the collection
+        schema:
+          type: string
+          format: uuid
+
+    delete:
+      tags: [Collection]
+      summary: Remove an item from the collection
+      operationId: removeItemFromCollection
+      x-req-id: REQ-F-019
+      description: >
+        Removes the membership only; the item remains in the catalog
+        and in all other collections (REQ-F-019).
+      responses:
+        '204':
+          description: Item removed from collection
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Stats ─────────────────────────────────────────────────────────────────────
+
+  /stats:
+    get:
+      tags: [Stats]
+      summary: Get personal statistics
+      operationId: getStats
+      x-req-id: "REQ-F-022, REQ-F-022a"
+      description: >
+        Counts items with status=completed, broken down by type.
+        The period parameter filters by Item.completedAt (not by Session date).
+      parameters:
+        - name: period
+          in: query
+          required: true
+          description: "Time period — REQ-F-022a: month | year | all"
+          schema:
+            $ref: '#/components/schemas/StatsPeriod'
+      responses:
+        '200':
+          description: Statistics by type and period
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
