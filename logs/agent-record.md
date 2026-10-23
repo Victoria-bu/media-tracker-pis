@@ -22,4 +22,4 @@ Provider     │ ai-run-sso
 Model        │ claude-sonnet-4-6
 CodeMie URL  │ https://codemie.lab.epam.com
 Agent        │ claude
-\`\`\`
+\`\`\` 
