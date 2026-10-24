@@ -101,12 +101,6 @@ components:
             message: Validation failed
             field: email
 
-    Conflict:
-      description: Conflict
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
 
   schemas:
 
