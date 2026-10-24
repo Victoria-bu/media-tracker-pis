@@ -1,0 +1,27 @@
+{
+  "name": "media-tracker-pis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Victoria-bu/media-tracker-pis.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Victoria-bu/media-tracker-pis/issues"
+  },
+  "homepage": "https://github.com/Victoria-bu/media-tracker-pis#readme",
+  "devDependencies": {
+    "@stoplight/prism-cli": "^5.14.2"
+  }
+}
