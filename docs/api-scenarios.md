@@ -21,7 +21,9 @@
 node_modules/.bin/prism mock spec/openapi.yaml --port 4010
 ```
 
-Prism автоматично генерує відповіді на основі схем OpenAPI. Усі 24 ендпоїнти доступні одразу без серверної реалізації.
+Prism автоматично генерує відповіді на основі схем OpenAPI. Усі 26 операцій доступні одразу без серверної реалізації.
+
+> **Обмеження Prism:** валідацію вмісту multipart-файлів (формат, розмір) Prism не виконує — ці перевірки закодовані в описі, але не перевіряються в runtime. Для сценаріїв, де потрібен конкретний HTTP-код (409, 404, 400 з Prism-причиною), використовується заголовок `Prefer: code=<статус>`.
 
 ---
 
@@ -55,8 +57,10 @@ Prism автоматично генерує відповіді на основі
 | P-22 | Статистика за поточний місяць | GET | `/stats?period=month` | 200 | ✓ |
 | P-23 | Статистика за поточний рік | GET | `/stats?period=year` | 200 | ✓ |
 | P-24 | Статистика за весь час | GET | `/stats?period=all` | 200 | ✓ |
+| P-25 | Завантажити обкладинку (JPEG) | POST | `/items/:id/cover` | 200 | ✓ |
+| P-26 | Видалити кастомну обкладинку | DELETE | `/items/:id/cover` | 204 | ✓ |
 
-**Підсумок: 24/24 ✓**
+**Підсумок: 26/26 ✓**
 
 ---
 
@@ -81,8 +85,12 @@ Prism автоматично генерує відповіді на основі
 | N-15 | Статистика без параметра `period` | GET | `/stats` | Відсутній обов'язковий query param | 400 | ✓ |
 | N-16 | Статистика з невалідним `period` | GET | `/stats?period=week` | `period` ∉ {month, year, all} | 400 | ✓ |
 | N-17 | Нікнейм коротший за 2 символи | PATCH | `/users/me` | `nickname.minLength` = 2 (REQ-NF-006) | 400 | ✓ |
+| N-18 | Реєстрація з вже існуючим email | POST | `/auth/register` | Конфлікт унікальності (ADD-02) | 409 | ✓ |
+| N-19 | Додати елемент, що вже є в добірці | POST | `/collections/:id/items` | Дублікат many-to-many (ADD-03) | 409 | ✓ |
+| N-20 | Отримати неіснуючий елемент | GET | `/items/:id` | Ресурс не знайдено (ADD-06) | 404 | ✓ |
+| N-21 | Обкладинка невалідного формату | POST | `/items/:id/cover` | `INVALID_FILE_FORMAT` (REQ-NF-006, REQ-F-028) — Prism не перевіряє вміст файлу, використано `Prefer: code=400` | 400 | ✓ |
 
-**Підсумок: 17/17 ✓**
+**Підсумок: 21/21 ✓**
 
 ---
 
@@ -92,15 +100,72 @@ Prism автоматично генерує відповіді на основі
 # Запустити mock-сервер
 node_modules/.bin/prism mock spec/openapi.yaml --port 4010
 
-# Приклад позитивного сценарію (P-06)
+# P-06: додати книгу
 curl -s -X POST http://localhost:4010/items \
   -H "Content-Type: application/json" \
   -H "Cookie: session=test" \
   -d '{"title":"Dune","type":"book","author":"Frank Herbert","pages":412}'
+# → 201
 
-# Приклад негативного сценарію (N-02)
+# P-25: завантажити обкладинку (невеликий тестовий файл)
+printf '\xFF\xD8\xFF\xE0fake-jpeg' > /tmp/test_cover.jpg
+curl -s -o /dev/null -w "%{http_code}" -X POST \
+  http://localhost:4010/items/00000000-0000-0000-0000-000000000001/cover \
+  -H "Cookie: session=test" \
+  -F "file=@/tmp/test_cover.jpg;type=image/jpeg"
+# → 200
+
+# P-26: видалити обкладинку
+curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+  http://localhost:4010/items/00000000-0000-0000-0000-000000000001/cover \
+  -H "Cookie: session=test"
+# → 204
+
+# N-02: пароль занадто короткий
 curl -s -X POST http://localhost:4010/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"abc","nickname":"Vic"}'
 # → 400
+
+# N-18: дублікат email (409 через Prefer)
+curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:4010/auth/register \
+  -H "Content-Type: application/json" \
+  -H "Prefer: code=409" \
+  -d '{"email":"taken@example.com","password":"password123","nickname":"Vic"}'
+# → 409
+
+# N-19: елемент уже в добірці (409 через Prefer)
+curl -s -o /dev/null -w "%{http_code}" -X POST \
+  http://localhost:4010/collections/00000000-0000-0000-0000-000000000001/items \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=test" \
+  -H "Prefer: code=409" \
+  -d '{"itemId":"00000000-0000-0000-0000-000000000002"}'
+# → 409
+
+# N-20: неіснуючий елемент (404 через Prefer)
+curl -s -o /dev/null -w "%{http_code}" \
+  http://localhost:4010/items/00000000-0000-0000-0000-000000000099 \
+  -H "Cookie: session=test" \
+  -H "Prefer: code=404"
+# → 404
+
+# N-21: невалідний формат обкладинки (Prism не перевіряє вміст; Prefer: code=400)
+echo "not an image" > /tmp/test_cover.txt
+curl -s -o /dev/null -w "%{http_code}" -X POST \
+  http://localhost:4010/items/00000000-0000-0000-0000-000000000001/cover \
+  -H "Cookie: session=test" \
+  -H "Prefer: code=400" \
+  -F "file=@/tmp/test_cover.txt;type=text/plain"
+# → 400
 ```
+
+## Автоматичний прогін усіх сценаріїв
+
+```bash
+# Запустити всі сценарії та зберегти звіт
+bash tests/run-mock-scenarios.sh | tee logs/api-mock-run.md
+```
+
+Скрипт `tests/run-mock-scenarios.sh` виконує всі 47 сценаріїв, друкує таблицю
+«очікуваний / фактичний код» і зберігає вивід у `logs/api-mock-run.md`.
