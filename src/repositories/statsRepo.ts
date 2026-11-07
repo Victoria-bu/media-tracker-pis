@@ -1,63 +1,68 @@
 import Database from 'better-sqlite3';
 import { getClock } from '../utils/clock';
+import { Period } from '../validators/statsValidators';
 
 export interface StatsRow {
   type: string;
   cnt: number;
 }
 
+type PeriodFilter = { filter: string; params: string[] };
+
+function buildDateFilter(
+  period: Period,
+  refDate: string,
+  column: string,
+  requireNotNull: boolean,
+): PeriodFilter {
+  if (period === 'all') return { filter: '', params: [] };
+
+  const nullGuard = requireNotNull ? `AND ${column} IS NOT NULL ` : '';
+
+  if (period === 'month') {
+    return {
+      filter: `${nullGuard}AND strftime('%Y-%m', ${column}) = strftime('%Y-%m', ?)`,
+      params: [refDate],
+    };
+  }
+  return {
+    filter: `${nullGuard}AND strftime('%Y', ${column}) = strftime('%Y', ?)`,
+    params: [refDate],
+  };
+}
+
 export function getStatsByPeriod(
   db: Database.Database,
   userId: string,
-  period: 'month' | 'year' | 'all',
+  period: Period,
 ): StatsRow[] {
   const refDate = getClock()().toISOString();
-
-  let dateFilter = '';
-  const params: string[] = [userId];
-
-  if (period === 'month') {
-    dateFilter = "AND completed_at IS NOT NULL AND strftime('%Y-%m', completed_at) = strftime('%Y-%m', ?)";
-    params.push(refDate);
-  } else if (period === 'year') {
-    dateFilter = "AND completed_at IS NOT NULL AND strftime('%Y', completed_at) = strftime('%Y', ?)";
-    params.push(refDate);
-  }
+  const { filter, params } = buildDateFilter(period, refDate, 'completed_at', true);
 
   return db.prepare(`
     SELECT type, COUNT(*) as cnt
     FROM items
     WHERE user_id = ?
       AND status = 'completed'
-      ${dateFilter}
+      ${filter}
     GROUP BY type
-  `).all(...params) as StatsRow[];
+  `).all(userId, ...params) as StatsRow[];
 }
 
 export function getSessionStatsByPeriod(
   db: Database.Database,
   userId: string,
-  period: 'month' | 'year' | 'all',
+  period: Period,
 ): StatsRow[] {
   const refDate = getClock()().toISOString();
-
-  let dateFilter = '';
-  const params: string[] = [userId];
-
-  if (period === 'month') {
-    dateFilter = "AND strftime('%Y-%m', s.date) = strftime('%Y-%m', ?)";
-    params.push(refDate);
-  } else if (period === 'year') {
-    dateFilter = "AND strftime('%Y', s.date) = strftime('%Y', ?)";
-    params.push(refDate);
-  }
+  const { filter, params } = buildDateFilter(period, refDate, 's.date', false);
 
   return db.prepare(`
     SELECT i.type, COUNT(*) as cnt
     FROM sessions s
     JOIN items i ON i.id = s.item_id
     WHERE i.user_id = ?
-      ${dateFilter}
+      ${filter}
     GROUP BY i.type
-  `).all(...params) as StatsRow[];
+  `).all(userId, ...params) as StatsRow[];
 }

@@ -1,12 +1,9 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import Database from 'better-sqlite3';
 import { requireAuth } from '../middleware/auth';
+import { periodSchema, basisSchema, Basis } from '../validators/statsValidators';
 import * as statsService from '../services/statsService';
 import { logCrud, logValidationError } from '../logger';
-
-const periodSchema = z.enum(['month', 'year', 'all']);
-const basisSchema = z.enum(['completedAt', 'sessions']);
 
 export function createStatsRouter(db: Database.Database): Router {
   const router = Router();
@@ -23,7 +20,7 @@ export function createStatsRouter(db: Database.Database): Router {
       return;
     }
 
-    let basis: 'completedAt' | 'sessions' = 'completedAt';
+    let basis: Basis = 'completedAt';
     if (req.query.basis !== undefined) {
       const basisResult = basisSchema.safeParse(req.query.basis);
       if (!basisResult.success) {
@@ -39,8 +36,10 @@ export function createStatsRouter(db: Database.Database): Router {
     }
 
     try {
-      const stats = statsService.getStats(db, req.session.userId!, periodResult.data, basis);
-      logCrud('list', 'stats', req.session.userId!);
+      const period = periodResult.data;
+      const stats = statsService.getStats(db, req.session.userId!, period, basis);
+      // Log includes period and basis — no sensitive data (no passwords/tokens/cookies)
+      logCrud('list', 'stats', req.session.userId!, `${period}/${basis}`);
       res.status(200).json(stats);
     } catch (err) { next(err); }
   });
