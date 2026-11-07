@@ -229,6 +229,7 @@ The log file is a machine-readable verification artifact — based on it, the de
 |---|---|
 | REQ-F-022 | The system shall display personal statistics: the number of items with "completed" status broken down by type (books / TV series / films) and by selected time period. |
 | REQ-F-022a | Time period selection for statistics — from predefined options: "this month", "this year", "all time". |
+| REQ-F-022b | The system shall provide an alternative statistics mode based on Session dates (`basis=sessions`). In this mode, the counters represent viewing/reading events (Sessions), not completed items. Each Session is counted in the month/year of its `date` field. An item may be counted multiple times if its Sessions span different periods. Without the `basis` parameter (or with `basis=completedAt`), the system behaves as defined in REQ-F-022 and ADD-05. |
 
 ---
 
@@ -316,6 +317,16 @@ If any constraint is violated, the system displays a specific error message indi
 | AC-037 | REQ-NF-004 | All pages are usable and free of layout breakage on mobile viewports from 375 px to 428 px. No horizontal scroll appears at 375 px. |
 | AC-038 | REQ-NF-005 | All functional scenarios execute without errors in the latest two releases of Chrome, and Safari (mobile Safari on iOS 16+). |
 | AC-039 | REQ-NF-007 | The session cookie is issued with the `HttpOnly` flag and is inaccessible via JavaScript. |
+| AC-040 | REQ-F-022b | With `basis=sessions` and `period=all`, the response contains Session counts by item type and total = their sum. |
+| AC-041 | REQ-F-022b | With `basis=sessions` and `period=month`, only Sessions whose `date` falls in the current calendar month are counted. |
+| AC-042 | REQ-F-022b | With `basis=sessions` and `period=year`, only Sessions whose `date` falls in the current calendar year are counted. |
+| AC-043 | REQ-F-022b | One item with two Sessions in the same month contributes count=2 to its type, not 1. |
+| AC-044 | REQ-F-022b | Without `basis` parameter (or with `basis=completedAt`) the response is identical to ADD-05 behavior: backward compatibility is preserved. |
+| AC-045 | REQ-F-022b | A completed item with no Sessions at `basis=sessions` → count=0 for its type. |
+| AC-046 | REQ-F-022b | A Session on an `in_progress` item at `basis=sessions` → counted. |
+| AC-047 | REQ-F-022b | `basis=invalid` → 400, code: INVALID_BASIS, field: "basis". |
+| AC-048 | REQ-F-022b | Empty catalog (or no Sessions) at any basis → all zeros. |
+| AC-049 | REQ-F-022b | A Session with date on the last day of the month is counted in that month; a Session with date on the first day of the next month is counted in the next month. |
 
 ---
 

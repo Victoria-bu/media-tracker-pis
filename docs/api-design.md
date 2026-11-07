@@ -98,7 +98,7 @@
 | 21 | DELETE | `/collections/:id` | F-018 | — | — | — | 204, 401, 404 |
 | 22 | POST | `/collections/:id/items` | F-015 | — | `itemId*` | `{ itemId, collectionId }` | 201 ⁶, 400, 401, 404, 409 |
 | 23 | DELETE | `/collections/:id/items/:itemId` | F-019 | — | — | — | 204, 401, 404 |
-| 24 | GET | `/stats` | F-022, F-022a | `period*` ⁷ | — | `Stats` | 200, 400, 401 |
+| 24 | GET | `/stats` | F-022, F-022a, F-022b | `period*` ⁷, `basis?` ⁸ | — | `Stats` | 200, 400, 401 |
 
 **Виноски:**
 
@@ -114,7 +114,9 @@
 >
 > ⁶ **201, не 200**: запит створює новий зв'язок many-to-many в БД — аналогічно до `POST /items/:id/sessions` (рядок 14).
 >
-> ⁷ `period` — обов'язковий enum із трьох значень: `month`, `year`, `all`. Будь-яке інше значення → 400 `INVALID_PERIOD`.
+> ⁷ `period` — обов'язковий enum із трьох значень: `month`, `year`, `all`. Відсутній або невідомий → 400 `VALIDATION_ERROR`. Поточний місяць/рік — за сервером (UTC); майбутні дати Session рахуються, якщо потрапляють у діапазон.
+>
+> ⁸ `basis` — необов'язковий enum: `completedAt` (default, ADD-05) | `sessions` (ADD-07/REQ-F-022b). Невідоме значення → 400 `INVALID_BASIS`. При `basis=sessions` лічильники означають кількість Sessions (не унікальних елементів) у вказаному period; `Stats.basis` завжди присутнє у відповіді.
 
 ---
 
@@ -175,9 +177,12 @@
 }
 
 // Stats  (GET /stats)
-// period фільтрує за Item.completedAt (не за датою Session)
+// basis=completedAt (default, ADD-05): рахує Items за completedAt
+// basis=sessions   (ADD-07/F-022b): рахує Sessions за Session.date;
+//   total = сума Sessions (не унікальних елементів)
 {
   "period": "month | year | all",
+  "basis":  "completedAt | sessions",   // завжди присутнє
   "books": "integer",
   "series": "integer",
   "films": "integer",
@@ -222,3 +227,4 @@
 | Ресурс не знайдено | 404 | `NOT_FOUND` |
 | Email вже зареєстрований | 409 | `EMAIL_TAKEN` |
 | Елемент вже є в добірці | 409 | `ITEM_ALREADY_IN_COLLECTION` |
+| Невідоме значення `basis` | 400 | `INVALID_BASIS` |

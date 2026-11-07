@@ -150,6 +150,15 @@ components:
         - year
         - all
 
+    StatsBasis:
+      type: string
+      enum:
+        - completedAt
+        - sessions
+      description: >
+        completedAt (default): counts items with status=completed, filtered by Item.completedAt (ADD-05).
+        sessions: counts Sessions (viewing/reading events) by Session.date (ADD-07/REQ-F-022b).
+
     # ── Domain schemas ───────────────────────────────────────────────────────
     User:
       type: object
@@ -312,10 +321,13 @@ components:
     Stats:
       type: object
       description: >
-        Counts items with status=completed, filtered by Item.completedAt
-        (not by Session date).
+        Personal statistics. Semantics depend on `basis`:
+        completedAt (default, ADD-05): counts items with status=completed, filtered by Item.completedAt.
+        sessions (ADD-07/REQ-F-022b): counts Sessions (viewing events) by Session.date;
+        books/series/films = number of Sessions on items of that type; total = sum of all Sessions.
       required:
         - period
+        - basis
         - books
         - series
         - films
@@ -323,6 +335,8 @@ components:
       properties:
         period:
           $ref: '#/components/schemas/StatsPeriod'
+        basis:
+          $ref: '#/components/schemas/StatsBasis'
         books:
           type: integer
         series:
@@ -1082,10 +1096,12 @@ paths:
       tags: [Stats]
       summary: Get personal statistics
       operationId: getStats
-      x-req-id: "REQ-F-022, REQ-F-022a"
+      x-req-id: "REQ-F-022, REQ-F-022a, REQ-F-022b"
       description: >
-        Counts items with status=completed, broken down by type.
-        The period parameter filters by Item.completedAt (not by Session date).
+        Returns personal statistics broken down by content type.
+        With basis=completedAt (default, ADD-05): counts items with status=completed, filtered by Item.completedAt.
+        With basis=sessions (ADD-07/REQ-F-022b): counts Sessions by Session.date; each Session is one viewing event.
+        Current month/year determined by server clock (UTC). Future-dated Sessions are counted if they fall in the period.
       parameters:
         - name: period
           in: query
@@ -1093,6 +1109,12 @@ paths:
           description: "Time period — REQ-F-022a: month | year | all"
           schema:
             $ref: '#/components/schemas/StatsPeriod'
+        - name: basis
+          in: query
+          required: false
+          description: "Counting basis — REQ-F-022b: completedAt (default) | sessions"
+          schema:
+            $ref: '#/components/schemas/StatsBasis'
       responses:
         '200':
           description: Statistics by type and period
@@ -1101,6 +1123,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Stats'
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Invalid period or basis parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_period:
+                  value: { code: VALIDATION_ERROR, message: "period must be one of: month, year, all", field: period }
+                invalid_basis:
+                  value: { code: INVALID_BASIS, message: "basis must be completedAt or sessions", field: basis }
         '401':
           $ref: '#/components/responses/Unauthorized'

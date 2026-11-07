@@ -47,3 +47,4 @@
 | REQ-NF-007 | AC-039 | — | 1 | `Set-Cookie` on `POST /auth/register`, `POST /auth/login` | — | — | — |
 | REQ-NF-008 | AC-032 | — | 7 | — (UI empty state) | — | — | — |
 | REQ-NF-009 | AC-033 | — | 1 | — (test logging) | — | — | — |
+| REQ-F-022b | AC-040…049 | — | 7 | `GET /stats?basis=sessions` (ADD-07) | — | — | spec/addendum-07.md |
