@@ -106,7 +106,19 @@ Auth: HTTP-only session cookie set on `POST /auth/register` and `POST /auth/logi
 | `DELETE /collections/:id` | Delete collection |
 | `POST /collections/:id/items` | Add item to collection |
 | `DELETE /collections/:id/items/:itemId` | Remove item from collection |
-| `GET /stats?period=` | Personal statistics (month / year / all) |
+| `GET /stats?period=&basis=` | Personal statistics (period: month/year/all; basis: completedAt\|sessions) |
+
+**Stats `basis` parameter:**
+- `basis=completedAt` *(default)* — counts completed items by `Item.completedAt` date
+- `basis=sessions` — counts Sessions (viewing events) by `Session.date`; one item re-watched twice = 2
+
+```bash
+# Items completed this month
+GET /api/v1/stats?period=month
+
+# Viewing events this year (all statuses)
+GET /api/v1/stats?period=year&basis=sessions
+```
 
 Full contract: `spec/openapi.yaml`
 
