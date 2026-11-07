@@ -516,6 +516,7 @@ paths:
               properties:
                 title:
                   type: string
+                  minLength: 1
                 type:
                   $ref: '#/components/schemas/ItemType'
                 status:
@@ -602,6 +603,7 @@ paths:
               properties:
                 title:
                   type: string
+                  minLength: 1
                 type:
                   $ref: '#/components/schemas/ItemType'
                 status:
@@ -910,6 +912,7 @@ paths:
               properties:
                 name:
                   type: string
+                  minLength: 1
       responses:
         '201':
           description: Collection created
@@ -961,6 +964,7 @@ paths:
               properties:
                 name:
                   type: string
+                  minLength: 1
       responses:
         '200':
           description: Collection renamed
