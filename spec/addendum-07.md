@@ -52,7 +52,8 @@ GET /stats?period={month|year|all}&basis={completedAt|sessions}
 | `completedAt` | **(дефолт)** поведінка ADD-05 — рахує елементи з `status=completed`, фільтрує за `Item.completedAt` |
 | `sessions` | рахує Sessions, фільтрує за `Session.date` |
 
-**Схема відповіді** — однакова для обох basis:
+**Схема відповіді** — однакова для обох basis; поле `basis` **завжди присутнє**
+(раніше відсутнє), відображає фактично використаний режим:
 
 ```json
 {
@@ -65,7 +66,13 @@ GET /stats?period={month|year|all}&basis={completedAt|sessions}
 }
 ```
 
-Поле `basis` додається до відповіді (раніше відсутнє) з дефолтом `"completedAt"`.
+При `basis=completedAt` (або без параметра): `"basis": "completedAt"`.
+При `basis=sessions`: `"basis": "sessions"`.
+
+**Семантика лічильників** при `basis=sessions`:
+- `books/series/films` — кількість Sessions на елементах відповідного типу у вказаному
+  period (не кількість унікальних елементів)
+- `total` — сума всіх Sessions (books + series + films)
 
 ---
 
@@ -128,6 +135,46 @@ Session означає відсутність факту перегляду в �
 
 ---
 
+#### Рішення 5 — Sessions із майбутньою датою
+
+**Питання:** Session із `date` > сьогодні (майбутня дата) рахується у поточному
+місяці/році?
+
+**Рішення: Так, рахується, якщо дата потрапляє у відповідний діапазон.**
+
+Сервер не перевіряє, чи `session.date ≤ сьогодні`. Фільтр `period=month`
+відбирає всі Sessions, чия дата входить у поточний рік-місяць, незалежно від
+того, чи вона вже минула. Це узгоджено з тим, як сервер обробляє `completedAt`
+(теж зберігає будь-яку дату без обмежень).
+
+**Обґрунтування:** Клієнт несе відповідальність за введену дату. Серверна
+валідація «дата не може бути майбутньою» суперечила б можливості вносити записи
+наперед (запланований перегляд) і не описана в SRS.
+
+---
+
+#### Рішення 6 — Джерело поточної дати (Clock)
+
+**Питання:** Звідки `GET /stats` бере «поточну дату» для фільтру `period=month/year`?
+
+**Рішення: Замінюваний clock (dependency injection) через `src/utils/clock.ts`.**
+
+Замість `strftime('now')` у SQL-запиті statsRepo передається рядок дати з
+модуля `clock.ts`. В продакшені clock повертає `new Date()`. У тестах clock
+можна замінити фіксованою датою через `setClock(fn)`.
+
+Це зроблено в рамках Етапу 6 (рефакторинг) і є **обов'язковою умовою для
+детермінованого тестування** AC-041, AC-042, AC-049.
+
+```
+// src/utils/clock.ts  (не код, лише опис контракту)
+getClock(): () => Date   — повертає поточну функцію годинника
+setClock(fn): void       — замінює годинник (тільки для тестів)
+resetClock(): void       — відновлює defaultGetNow = () => new Date()
+```
+
+---
+
 #### Рішення 4 — Статус ADD-05
 
 ADD-05 (docs/api-addendum.md, розділ «ADD-05 — Статистика фільтрується за
@@ -159,7 +206,7 @@ ADD-05 (docs/api-addendum.md, розділ «ADD-05 — Статистика ф�
 |---|---|---|
 | AC-045 | REQ-F-022b | Елемент зі статусом `completed` без Sessions при `basis=sessions` → не рахується (count=0 для його типу) |
 | AC-046 | REQ-F-022b | Session елемента з `status=in_progress` при `basis=sessions` → рахується |
-| AC-047 | REQ-F-022b | `basis=invalid` → 400 VALIDATION_ERROR з `field: "basis"` |
+| AC-047 | REQ-F-022b | `basis=invalid` → 400, `code: INVALID_BASIS`, `field: "basis"` |
 | AC-048 | REQ-F-022b | Порожній каталог (або всі статуси ≠ completed, жодної Session) при будь-якому basis → `{books:0, series:0, films:0, total:0}` |
 | AC-049 | REQ-F-022b | Session з датою в останній день місяця рахується в тому місяці (не наступному); Session з датою в перший день нового місяця — у новому місяці |
 
@@ -173,7 +220,8 @@ ADD-05 (docs/api-addendum.md, розділ «ADD-05 — Статистика ф�
 | `spec/openapi.yaml` | GET /stats: новий `basis` parameter (enum: completedAt, sessions, default: completedAt); Stats schema: додати поле `basis` у response | Після SG |
 | `spec/traceability-matrix.md` | Новий рядок: `REQ-F-022b \| AC-040…049 \| — \| 7 \| GET /stats (ADD-07) \| — \| — \| —` | Після SG |
 | `docs/api-addendum.md` | ADD-05: додати посилання «_Оновлено: ADD-07_» | Після SG |
-| `docs/api-design.md` | §1: рядок REQ-F-022 — уточнити, що сервер тепер підтримує два режими basis | Після SG |
+| `docs/api-design.md` | §1: рядок REQ-F-022 — уточнити, що сервер підтримує два режими; §4 (нова виноска): period-фільтр використовує server clock (UTC), майбутні дати Sessions рахуються; §5 (нова): схема Stats з полем `basis`; розділ помилок: додати `INVALID_BASIS (400, field: basis)` | Після SG |
+| `src/utils/clock.ts` | Новий модуль: замінюваний годинник для statsRepo (Рішення 6). Реалізується в Етапі 6 | Етап 6 |
 | `tests/integration/stats.test.ts` | Наявний тест `ADD-05: stats use completedAt, NOT session date` — **не змінюється** (тестує дефолтну поведінку). Нові тести: AC-040…049 | Etape 8а (після TG) |
 
 ---
