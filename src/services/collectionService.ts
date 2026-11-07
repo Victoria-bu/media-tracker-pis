@@ -3,6 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import * as collectionRepo from '../repositories/collectionRepo';
 import * as itemRepo from '../repositories/itemRepo';
 import { DbCollection, DbCollectionItem } from '../repositories/collectionRepo';
+import { notFound, makeError } from '../utils/errors';
+
+export type { AppError } from '../utils/errors';
 
 export interface ApiCollection {
   id: string;
@@ -22,17 +25,6 @@ export interface ApiCollectionItem {
   createdAt: string;
 }
 
-export interface AppError extends Error {
-  code: string;
-  status: number;
-}
-
-function notFound(): AppError {
-  const err = new Error('Resource not found') as AppError;
-  err.code = 'NOT_FOUND';
-  err.status = 404;
-  return err;
-}
 
 function assertOwner(col: DbCollection | undefined, userId: string): DbCollection {
   if (!col || col.user_id !== userId) throw notFound();
@@ -98,19 +90,20 @@ export function addItemToCollection(
   itemId: string,
   userId: string,
 ): { itemId: string; collectionId: string } {
-  assertOwner(collectionRepo.getCollectionById(db, collectionId), userId);
+  const addTx = db.transaction(() => {
+    assertOwner(collectionRepo.getCollectionById(db, collectionId), userId);
 
-  const item = itemRepo.getItemById(db, itemId);
-  if (!item || item.user_id !== userId) throw notFound();
+    const item = itemRepo.getItemById(db, itemId);
+    if (!item || item.user_id !== userId) throw notFound();
 
-  if (collectionRepo.collectionHasItem(db, collectionId, itemId)) {
-    const err = new Error('Елемент вже є в цій добірці') as AppError;
-    err.code = 'ITEM_ALREADY_IN_COLLECTION';
-    err.status = 409;
-    throw err;
-  }
+    if (collectionRepo.collectionHasItem(db, collectionId, itemId)) {
+      throw makeError('ITEM_ALREADY_IN_COLLECTION', 'Елемент вже є в цій добірці', 409);
+    }
 
-  collectionRepo.addItemToCollection(db, collectionId, itemId);
+    collectionRepo.addItemToCollection(db, collectionId, itemId);
+  });
+
+  addTx();
   return { itemId, collectionId };
 }
 

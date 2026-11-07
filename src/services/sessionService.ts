@@ -4,6 +4,9 @@ import * as sessionRepo from '../repositories/sessionRepo';
 import * as itemRepo from '../repositories/itemRepo';
 import { DbSession } from '../repositories/sessionRepo';
 import { CreateSessionData, UpdateSessionData } from '../validators/sessionValidators';
+import { notFound } from '../utils/errors';
+
+export type { AppError } from '../utils/errors';
 
 export interface ApiSession {
   id: string;
@@ -13,20 +16,8 @@ export interface ApiSession {
   note: string | null;
 }
 
-export interface AppError extends Error {
-  code: string;
-  status: number;
-}
-
 function toApi(s: DbSession): ApiSession {
   return { id: s.id, itemId: s.item_id, date: s.date, rating: s.rating, note: s.note };
-}
-
-function notFound(): AppError {
-  const err = new Error('Resource not found') as AppError;
-  err.code = 'NOT_FOUND';
-  err.status = 404;
-  return err;
 }
 
 function assertItemOwner(db: Database.Database, itemId: string, userId: string): void {

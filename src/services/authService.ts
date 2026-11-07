@@ -4,20 +4,9 @@ import Database from 'better-sqlite3';
 import * as userRepo from '../repositories/userRepo';
 import { ApiUser } from '../repositories/userRepo';
 import { ENV } from '../config/env';
+import { makeError } from '../utils/errors';
 
-export interface AppError extends Error {
-  code: string;
-  status: number;
-  field?: string;
-}
-
-function makeError(code: string, message: string, status: number, field?: string): AppError {
-  const err = new Error(message) as AppError;
-  err.code = code;
-  err.status = status;
-  if (field) err.field = field;
-  return err;
-}
+export type { AppError } from '../utils/errors';
 
 export async function register(
   db: Database.Database,

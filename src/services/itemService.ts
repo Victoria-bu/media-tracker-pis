@@ -3,6 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import * as itemRepo from '../repositories/itemRepo';
 import { DbItem } from '../repositories/itemRepo';
 import { CreateItemData, UpdateItemData } from '../validators/itemValidators';
+import { notFound } from '../utils/errors';
+
+export type { AppError } from '../utils/errors';
 
 export interface ApiItem {
   id: string;
@@ -20,11 +23,6 @@ export interface ApiItem {
   seasons: number | null;
   director: string | null;
   duration: number | null;
-}
-
-export interface AppError extends Error {
-  code: string;
-  status: number;
 }
 
 function toApi(item: DbItem): ApiItem {
@@ -45,13 +43,6 @@ function toApi(item: DbItem): ApiItem {
     director: item.director,
     duration: item.duration,
   };
-}
-
-function notFound(): AppError {
-  const err = new Error('Resource not found') as AppError;
-  err.code = 'NOT_FOUND';
-  err.status = 404;
-  return err;
 }
 
 function assertOwner(item: DbItem | undefined, userId: string): DbItem {
