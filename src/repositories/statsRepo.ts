@@ -33,3 +33,31 @@ export function getStatsByPeriod(
     GROUP BY type
   `).all(...params) as StatsRow[];
 }
+
+export function getSessionStatsByPeriod(
+  db: Database.Database,
+  userId: string,
+  period: 'month' | 'year' | 'all',
+): StatsRow[] {
+  const refDate = getClock()().toISOString();
+
+  let dateFilter = '';
+  const params: string[] = [userId];
+
+  if (period === 'month') {
+    dateFilter = "AND strftime('%Y-%m', s.date) = strftime('%Y-%m', ?)";
+    params.push(refDate);
+  } else if (period === 'year') {
+    dateFilter = "AND strftime('%Y', s.date) = strftime('%Y', ?)";
+    params.push(refDate);
+  }
+
+  return db.prepare(`
+    SELECT i.type, COUNT(*) as cnt
+    FROM sessions s
+    JOIN items i ON i.id = s.item_id
+    WHERE i.user_id = ?
+      ${dateFilter}
+    GROUP BY i.type
+  `).all(...params) as StatsRow[];
+}

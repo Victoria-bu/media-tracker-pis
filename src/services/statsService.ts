@@ -3,6 +3,7 @@ import * as statsRepo from '../repositories/statsRepo';
 
 export interface ApiStats {
   period: 'month' | 'year' | 'all';
+  basis: 'completedAt' | 'sessions';
   books: number;
   series: number;
   films: number;
@@ -13,9 +14,14 @@ export function getStats(
   db: Database.Database,
   userId: string,
   period: 'month' | 'year' | 'all',
+  basis: 'completedAt' | 'sessions' = 'completedAt',
 ): ApiStats {
-  const rows = statsRepo.getStatsByPeriod(db, userId, period);
-  const result: ApiStats = { period, books: 0, series: 0, films: 0, total: 0 };
+  const rows =
+    basis === 'sessions'
+      ? statsRepo.getSessionStatsByPeriod(db, userId, period)
+      : statsRepo.getStatsByPeriod(db, userId, period);
+
+  const result: ApiStats = { period, basis, books: 0, series: 0, films: 0, total: 0 };
   for (const row of rows) {
     if (row.type === 'book') result.books = row.cnt;
     else if (row.type === 'series') result.series = row.cnt;
