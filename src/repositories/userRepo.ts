@@ -14,28 +14,28 @@ export interface ApiUser {
   nickname: string;
 }
 
-export function findUserByEmail(_db: Database.Database, _email: string): DbUser | undefined {
-  throw new Error('Not implemented');
+export function findUserByEmail(db: Database.Database, email: string): DbUser | undefined {
+  return db.prepare('SELECT * FROM users WHERE email = ?').get(email) as DbUser | undefined;
 }
 
-export function findUserById(_db: Database.Database, _id: string): DbUser | undefined {
-  throw new Error('Not implemented');
+export function findUserById(db: Database.Database, id: string): DbUser | undefined {
+  return db.prepare('SELECT * FROM users WHERE id = ?').get(id) as DbUser | undefined;
 }
 
 export function createUser(
-  _db: Database.Database,
-  _id: string,
-  _email: string,
-  _passwordHash: string,
-  _nickname: string,
+  db: Database.Database,
+  id: string,
+  email: string,
+  passwordHash: string,
+  nickname: string,
 ): DbUser {
-  throw new Error('Not implemented');
+  db.prepare(
+    'INSERT INTO users (id, email, password_hash, nickname) VALUES (?, ?, ?, ?)',
+  ).run(id, email, passwordHash, nickname);
+  return findUserById(db, id)!;
 }
 
-export function updateUserNickname(
-  _db: Database.Database,
-  _id: string,
-  _nickname: string,
-): DbUser {
-  throw new Error('Not implemented');
+export function updateUserNickname(db: Database.Database, id: string, nickname: string): DbUser {
+  db.prepare('UPDATE users SET nickname = ? WHERE id = ?').run(nickname, id);
+  return findUserById(db, id)!;
 }

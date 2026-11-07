@@ -4,6 +4,8 @@ import Database from 'better-sqlite3';
 import { ENV } from './config/env';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
+import { createAuthRouter } from './routes/auth';
+import { createUsersRouter } from './routes/users';
 
 export function createApp(db: Database.Database): express.Application {
   const app = express();
@@ -25,7 +27,8 @@ export function createApp(db: Database.Database): express.Application {
 
   app.use(requestLogger);
 
-  // No routes registered — Red skeleton.
+  app.use('/api/v1/auth', createAuthRouter(db));
+  app.use('/api/v1/users', createUsersRouter(db));
 
   app.use(errorHandler);
 
