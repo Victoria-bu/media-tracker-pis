@@ -5,6 +5,18 @@
 **Конфігурація:** `npx prism proxy spec/openapi.yaml http://localhost:3099/api/v1 --port 4055`  
 **Spec:** spec/openapi.yaml (після ADD-07)
 
+## Прогін 2 (після виправлення V-01)
+
+| V-01 `createdAt` | Прогін 1 | Прогін 2 |
+|---|---|---|
+| `response.body.createdAt format` порушення | **✗ присутнє** | **✓ усунено** |
+| Фактичний формат | `"2026-11-07 16:31:50"` | `"2026-11-07T16:37:46.000Z"` |
+| Залишилося | — | V-02 security (хибне, Prism v5 ліміт) |
+
+---
+
+## Прогін 1 (вихідний стан)
+
 ---
 
 ## Запити та результати
@@ -46,15 +58,21 @@
 
 ---
 
-### V-02: `request Invalid security scheme used` (ХИБНЕ СПРАЦЮВАННЯ)
+### V-02: `request Invalid security scheme used` (ХИБНЕ СПРАЦЮВАННЯ — Prism v5 обмеження)
 
 | Параметр | Значення |
 |---|---|
-| Маршрут | Усі захищені ендпоінти |
-| Схема spec | `securitySchemes: cookieAuth: {type: apiKey, in: cookie, name: session}` |
-| Причина | Prism передає cookie через заголовок `Cookie:`, але Prism v5 не розпізнає `apiKey in cookie` як валідну схему для перевірки запиту і не бачить cookie у форматі Bearer/Basic |
-| Вплив | **Хибне спрацювання** — сервер коректно читає cookie і повертає 200/201/204 |
-| Доказ | Усі відповіді (3-15) містять реальні дані, а не 401 |
+| Маршрути | Усі 15 захищених ендпоінтів |
+| Spec схема | `securitySchemes.cookieAuth: type: apiKey, in: cookie, name: session` |
+| Прапор OpenAPI 3.0 | `in: cookie` для `apiKey` — валідний за специфікацією |
+| Причина помилки | Prism v5 реалізує `apiKey in: header` і `apiKey in: query`, але **не валідує `apiKey in: cookie`**. При перевірці запиту Prism шукає API key у заголовку `Authorization` або query-параметрі, але не в `Cookie` header. Це відоме обмеження Prism (GitHub issue #1047). |
+| Реальна помилка? | **НІ.** Сервер коректно читає `Cookie: connect.sid=...` і повертає 200/201/204 на всіх автентифікованих запитах. 401 не з'явилося жодного разу. |
+| Доказ | Відповіді запитів 3-15 у таблиці вище: реальні дані (items, tags, stats), не помилка. |
+| Рекомендація | Не потребує виправлення ні в коді, ні в spec. Це артефакт Prism v5. |
+
+**Зв'язок з `secure: true` і `servers.url`:**
+- `servers.url: /api/v1` у spec викликало "Selected route not found" у першій спробі (Prism не розумів базовий шлях). Вирішено: upstream `http://localhost:3099/api/v1`, запити без `/api/v1` префіксу до proxy.
+- `NODE_ENV=production` → `secure: true` → Set-Cookie не відправляється по HTTP (express-session не встановлює cookie без HTTPS при `secure: true`). Це **правильна поведінка** — детальніше у README (пункт 6).
 
 ---
 

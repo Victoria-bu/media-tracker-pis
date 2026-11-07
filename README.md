@@ -35,15 +35,20 @@ npm install
 ## Run
 
 ```bash
-# Development (hot reload)
+# Development — HTTP, hot reload, cookies work over HTTP
 npm run dev
 
-# Production
+# Production — requires HTTPS for session cookies (secure: true)
 npm run build
-npm start
+NODE_ENV=production npm start
 ```
 
 Default port: `3000`. Configurable via `PORT` env var.
+
+> **Local HTTP:** Do NOT set `NODE_ENV=production` for local development.
+> With `secure: true`, express-session will not set the session cookie over
+> plain HTTP (by design). The server will return 401 for all protected routes.
+> Use `npm run dev` (or omit `NODE_ENV`) for local testing.
 
 ---
 
