@@ -427,4 +427,24 @@ describe('DELETE /api/v1/items/:id/cover  [REQ-F-025]', () => {
   });
 });
 
+// ── V-01 ISO 8601 format contract fix ────────────────────────────────────────
+
+describe('Item.createdAt — ISO 8601 date-time format  [V-01, openapi format:date-time]', () => {
+  let db: Database.Database;
+  let agent: ReturnType<typeof request.agent>;
+
+  beforeEach(async () => {
+    db = createTestDb();
+    agent = await registerAndLogin(buildApp(db));
+  });
+
+  it('POST /items → createdAt is RFC 3339 ISO 8601 (YYYY-MM-DDTHH:MM:SS.mmmZ)', async () => {
+    const res = await agent.post('/api/v1/items')
+      .send({ title: 'FormatTest', type: 'book' });
+    expect(res.status).toBe(201);
+    // Must have T separator and Z suffix — NOT "2026-11-07 16:31:50"
+    expect(res.body.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+});
+
 import express from 'express';

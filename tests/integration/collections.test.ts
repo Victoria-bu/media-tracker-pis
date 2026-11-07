@@ -257,3 +257,19 @@ describe('DELETE /api/v1/collections/:id/items/:itemId  [REQ-F-019]', () => {
     expect(res.status).toBe(404);
   });
 });
+
+// ── V-01 ISO 8601 format contract fix ────────────────────────────────────────
+
+describe('CollectionItem.createdAt — ISO 8601 format  [V-01, openapi format:date-time]', () => {
+  it('GET /collections/{id} → items[0].createdAt is RFC 3339 ISO 8601', async () => {
+    const { agent } = await setup();
+    const col = await createCollection(agent, 'FormatColl');
+    const item = await createItem(agent, 'FormatItem');
+    await agent.post(`/api/v1/collections/${col.id}/items`).send({ itemId: item.id });
+
+    const res = await agent.get(`/api/v1/collections/${col.id}`);
+    expect(res.status).toBe(200);
+    // Must have T separator and Z suffix — NOT "2026-11-07 16:31:50"
+    expect(res.body.items[0].createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+});
