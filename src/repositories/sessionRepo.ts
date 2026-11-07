@@ -9,31 +9,47 @@ export interface DbSession {
   note: string | null;
 }
 
-export function getSessionById(_db: Database.Database, _id: string): DbSession | undefined {
-  throw new Error('Not implemented');
+export function getSessionById(db: Database.Database, id: string): DbSession | undefined {
+  return db.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as DbSession | undefined;
 }
 
-export function getSessionsByItemId(_db: Database.Database, _itemId: string): DbSession[] {
-  throw new Error('Not implemented');
+export function getSessionsByItemId(db: Database.Database, itemId: string): DbSession[] {
+  return db
+    .prepare('SELECT * FROM sessions WHERE item_id = ? ORDER BY date DESC')
+    .all(itemId) as DbSession[];
 }
 
 export function createSession(
-  _db: Database.Database,
-  _id: string,
-  _itemId: string,
-  _data: CreateSessionData,
+  db: Database.Database,
+  id: string,
+  itemId: string,
+  data: CreateSessionData,
 ): DbSession {
-  throw new Error('Not implemented');
+  db.prepare(
+    'INSERT INTO sessions (id, item_id, date, rating, note) VALUES (?, ?, ?, ?, ?)',
+  ).run(id, itemId, data.date, data.rating ?? null, data.note ?? null);
+  return getSessionById(db, id)!;
 }
 
 export function updateSession(
-  _db: Database.Database,
-  _id: string,
-  _data: UpdateSessionData,
+  db: Database.Database,
+  id: string,
+  data: UpdateSessionData,
 ): DbSession {
-  throw new Error('Not implemented');
+  const fields: string[] = [];
+  const values: unknown[] = [];
+
+  if (data.date !== undefined)   { fields.push('date = ?');   values.push(data.date); }
+  if (data.rating !== undefined) { fields.push('rating = ?'); values.push(data.rating); }
+  if (data.note !== undefined)   { fields.push('note = ?');   values.push(data.note); }
+
+  if (fields.length > 0) {
+    values.push(id);
+    db.prepare(`UPDATE sessions SET ${fields.join(', ')} WHERE id = ?`).run(...values);
+  }
+  return getSessionById(db, id)!;
 }
 
-export function deleteSession(_db: Database.Database, _id: string): void {
-  throw new Error('Not implemented');
+export function deleteSession(db: Database.Database, id: string): void {
+  db.prepare('DELETE FROM sessions WHERE id = ?').run(id);
 }
