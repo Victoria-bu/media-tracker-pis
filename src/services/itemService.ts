@@ -1,4 +1,6 @@
 import Database from 'better-sqlite3';
+import { v4 as uuidv4 } from 'uuid';
+import * as itemRepo from '../repositories/itemRepo';
 import { DbItem } from '../repositories/itemRepo';
 import { CreateItemData, UpdateItemData } from '../validators/itemValidators';
 
@@ -25,56 +27,82 @@ export interface AppError extends Error {
   status: number;
 }
 
-export function listItems(_db: Database.Database, _userId: string): ApiItem[] {
-  throw new Error('Not implemented');
+function toApi(item: DbItem): ApiItem {
+  return {
+    id: item.id,
+    title: item.title,
+    type: item.type,
+    status: item.status,
+    rating: item.rating,
+    notes: item.notes,
+    tags: JSON.parse(item.tags) as string[],
+    coverUrl: item.cover_url,
+    completedAt: item.completed_at,
+    createdAt: item.created_at,
+    author: item.author,
+    pages: item.pages,
+    seasons: item.seasons,
+    director: item.director,
+    duration: item.duration,
+  };
 }
 
-export function getItem(
-  _db: Database.Database,
-  _id: string,
-  _userId: string,
-): ApiItem {
-  throw new Error('Not implemented');
+function notFound(): AppError {
+  const err = new Error('Resource not found') as AppError;
+  err.code = 'NOT_FOUND';
+  err.status = 404;
+  return err;
+}
+
+function assertOwner(item: DbItem | undefined, userId: string): DbItem {
+  if (!item || item.user_id !== userId) throw notFound();
+  return item;
+}
+
+export function listItems(db: Database.Database, userId: string): ApiItem[] {
+  return itemRepo.getUserItems(db, userId).map(toApi);
+}
+
+export function getItem(db: Database.Database, id: string, userId: string): ApiItem {
+  return toApi(assertOwner(itemRepo.getItemById(db, id), userId));
 }
 
 export function createItem(
-  _db: Database.Database,
-  _userId: string,
-  _data: CreateItemData,
+  db: Database.Database,
+  userId: string,
+  data: CreateItemData,
 ): ApiItem {
-  throw new Error('Not implemented');
+  const id = uuidv4();
+  return toApi(itemRepo.createItem(db, id, userId, data));
 }
 
 export function updateItem(
-  _db: Database.Database,
-  _id: string,
-  _userId: string,
-  _data: UpdateItemData,
+  db: Database.Database,
+  id: string,
+  userId: string,
+  data: UpdateItemData,
 ): ApiItem {
-  throw new Error('Not implemented');
+  assertOwner(itemRepo.getItemById(db, id), userId);
+  return toApi(itemRepo.updateItem(db, id, data));
 }
 
-export function deleteItem(
-  _db: Database.Database,
-  _id: string,
-  _userId: string,
-): void {
-  throw new Error('Not implemented');
+export function deleteItem(db: Database.Database, id: string, userId: string): void {
+  assertOwner(itemRepo.getItemById(db, id), userId);
+  itemRepo.deleteItem(db, id);
 }
 
 export function setCoverUrl(
-  _db: Database.Database,
-  _id: string,
-  _userId: string,
-  _coverUrl: string,
+  db: Database.Database,
+  id: string,
+  userId: string,
+  coverUrl: string,
 ): ApiItem {
-  throw new Error('Not implemented');
+  assertOwner(itemRepo.getItemById(db, id), userId);
+  itemRepo.setCoverUrl(db, id, coverUrl);
+  return toApi(itemRepo.getItemById(db, id)!);
 }
 
-export function clearCoverUrl(
-  _db: Database.Database,
-  _id: string,
-  _userId: string,
-): void {
-  throw new Error('Not implemented');
+export function clearCoverUrl(db: Database.Database, id: string, userId: string): void {
+  assertOwner(itemRepo.getItemById(db, id), userId);
+  itemRepo.clearCoverUrl(db, id);
 }
