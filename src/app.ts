@@ -7,7 +7,12 @@ import { errorHandler } from './middleware/errorHandler';
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
 
-export function createApp(db: Database.Database): express.Application {
+export interface AppOptions {
+  uploadDir?: string;
+}
+
+export function createApp(db: Database.Database, options: AppOptions = {}): express.Application {
+  const uploadDir = options.uploadDir ?? ENV.UPLOAD_DIR;
   const app = express();
 
   app.use(express.json());
