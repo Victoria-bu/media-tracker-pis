@@ -244,6 +244,29 @@ describe('PATCH /api/v1/items/:id  [REQ-F-008]', () => {
     expect(res.body.tags).toEqual(['c']);
   });
 
+  it('AC-010: tags stored after POST, appear in GET response', async () => {
+    const created = (await agent.post('/api/v1/items')
+      .send({ title: 'Tagged Book', type: 'book', tags: ['fantasy', 'sci-fi'] })).body;
+
+    expect(created.tags).toEqual(['fantasy', 'sci-fi']);
+
+    const fetched = (await agent.get(`/api/v1/items/${created.id}`)).body;
+    expect(fetched.tags).toEqual(['fantasy', 'sci-fi']);
+  });
+
+  it('AC-010: removing a tag via PATCH does not affect other attributes', async () => {
+    const created = (await agent.post('/api/v1/items')
+      .send({ title: 'Multi Tag', type: 'book', rating: 8, notes: 'keep', tags: ['a', 'b', 'c'] })).body;
+
+    const res = await agent.patch(`/api/v1/items/${created.id}`).send({ tags: ['a'] });
+    expect(res.status).toBe(200);
+    expect(res.body.tags).toEqual(['a']);
+    // Other attributes unchanged
+    expect(res.body.title).toBe('Multi Tag');
+    expect(res.body.rating).toBe(8);
+    expect(res.body.notes).toBe('keep');
+  });
+
   it('empty title → 400', async () => {
     const created = (await agent.post('/api/v1/items').send({ title: 'X', type: 'book' })).body;
     const res = await agent.patch(`/api/v1/items/${created.id}`).send({ title: '' });
