@@ -199,16 +199,32 @@ describe('AC-047: invalid basis → 400 INVALID_BASIS', () => {
 
 // ── AC-048 ────────────────────────────────────────────────────────────────────
 
-describe('AC-048: empty catalog → all zeros at any basis', () => {
-  it('no items + basis=sessions → {books:0, series:0, films:0, total:0}', async () => {
+describe('AC-048: no sessions in queried period → zeros (basis=sessions)', () => {
+  it('sessions exist in LAST_YEAR only → period=month returns 0 at basis=sessions', async () => {
     const { agent } = await setup();
-    const res = await agent.get('/api/v1/stats?period=all&basis=sessions');
+    const book = await createItem(agent, 'book');
+
+    // Session exists, but in LAST_YEAR — not in current month
+    await addSession(agent, book.id, LAST_YEAR_DATE);
+
+    // Completed item with completedAt in THIS_MONTH: completedAt-mode would return 1
+    const book2 = await createItem(agent, 'book');
+    await agent.patch(`/api/v1/items/${book2.id}`)
+      .send({ status: 'completed', completedAt: THIS_MONTH_DATE });
+
+    // basis=sessions + period=month: no Nov sessions → 0
+    // completedAt + period=month: completed item in Nov → 1
+    // Expected: 0 / Actual (completedAt): 1 → FAIL ✓
+    const res = await agent.get('/api/v1/stats?period=month&basis=sessions');
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ books: 0, series: 0, films: 0, total: 0 });
+    expect(res.body.basis).toBe('sessions');
   });
 });
 
 // ── AC-049 ────────────────────────────────────────────────────────────────────
+// Clock is fixed at 2026-11-07T12:00:00Z via beforeEach(setClock).
+// All period filters (month/year) use this clock, not new Date().
 
 describe('AC-049: boundary dates — month attribution (server clock = 2026-11-07)', () => {
   it('session on 2026-11-30 (last day of Nov) → counted in Nov (period=month)', async () => {
@@ -216,18 +232,45 @@ describe('AC-049: boundary dates — month attribution (server clock = 2026-11-0
     const book = await createItem(agent, 'book');
     await addSession(agent, book.id, MONTH_LAST_DAY); // 2026-11-30
 
+    // basis=sessions: Nov session IS in Nov → books=1
+    // completedAt: no completed item → books=0
+    // Expected: 1 / Actual (completedAt): 0 → FAIL ✓
     const res = await agent.get('/api/v1/stats?period=month&basis=sessions');
     expect(res.status).toBe(200);
     expect(res.body.books).toBe(1);
   });
 
-  it('session on 2026-12-01 (first day of Dec) → NOT counted in Nov (period=month)', async () => {
+  it('session on 2026-12-01 NOT counted in Nov (period=month, clock=2026-11-07)', async () => {
     const { agent } = await setup();
     const book = await createItem(agent, 'book');
     await addSession(agent, book.id, NEXT_MONTH_FIRST); // 2026-12-01
 
+    // Add completed item in Nov → completedAt returns books=1
+    const otherBook = await createItem(agent, 'book');
+    await agent.patch(`/api/v1/items/${otherBook.id}`)
+      .send({ status: 'completed', completedAt: THIS_MONTH_DATE });
+
+    // basis=sessions: Dec session NOT in Nov → 0
+    // completedAt: Nov completed item → 1
+    // Expected: 0 / Actual (completedAt): 1 → FAIL ✓
     const res = await agent.get('/api/v1/stats?period=month&basis=sessions');
     expect(res.status).toBe(200);
     expect(res.body.books).toBe(0);
+  });
+
+  it('session on 2026-12-01 IS counted in Dec (period=month, clock advanced to 2026-12-15)', async () => {
+    const { agent } = await setup();
+    const book = await createItem(agent, 'book');
+    await addSession(agent, book.id, NEXT_MONTH_FIRST); // 2026-12-01
+
+    // Advance clock to December
+    setClock(() => new Date('2026-12-15T12:00:00Z'));
+
+    // basis=sessions: Dec session IS in Dec → books=1
+    // completedAt: no completed item → books=0
+    // Expected: 1 / Actual (completedAt): 0 → FAIL ✓
+    const res = await agent.get('/api/v1/stats?period=month&basis=sessions');
+    expect(res.status).toBe(200);
+    expect(res.body.books).toBe(1);
   });
 });
