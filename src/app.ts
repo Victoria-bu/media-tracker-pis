@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
 import { createItemsRouter } from './routes/items';
+import { createCollectionsRouter } from './routes/collections';
 
 export interface AppOptions {
   uploadDir?: string;
@@ -36,6 +37,7 @@ export function createApp(db: Database.Database, options: AppOptions = {}): expr
   app.use('/api/v1/auth', createAuthRouter(db));
   app.use('/api/v1/users', createUsersRouter(db));
   app.use('/api/v1/items', createItemsRouter(db, uploadDir));
+  app.use('/api/v1/collections', createCollectionsRouter(db));
 
   app.use(errorHandler);
 
