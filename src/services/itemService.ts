@@ -36,7 +36,7 @@ function toApi(item: DbItem): ApiItem {
     tags: JSON.parse(item.tags) as string[],
     coverUrl: item.cover_url,
     completedAt: item.completed_at,
-    createdAt: item.created_at,
+    createdAt: new Date(item.created_at.replace(' ', 'T') + 'Z').toISOString(),
     author: item.author,
     pages: item.pages,
     seasons: item.seasons,

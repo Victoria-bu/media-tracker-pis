@@ -42,7 +42,7 @@ function toApiItem(item: DbCollectionItem): ApiCollectionItem {
     type: item.type,
     status: item.status,
     rating: item.rating,
-    createdAt: item.created_at,
+    createdAt: new Date(item.created_at.replace(' ', 'T') + 'Z').toISOString(),
   };
 }
 
