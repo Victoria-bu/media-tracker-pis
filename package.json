@@ -4,7 +4,7 @@
   "description": "Personal Media Content Tracking IS — REST API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/db/migrations dist/db/",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run && node scripts/write-test-log.js",
