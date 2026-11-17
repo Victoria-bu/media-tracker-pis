@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { registerSchema, loginSchema } from '../validators/authValidators';
 import * as authService from '../services/authService';
 import { logAuth, logValidationError } from '../logger';
-import { AppError } from '../services/authService';
+import type { AppError } from '../services/authService';
 
 export function createAuthRouter(db: Database.Database): Router {
   const router = Router();

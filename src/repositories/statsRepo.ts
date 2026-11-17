@@ -1,6 +1,6 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { getClock } from '../utils/clock';
-import { Period } from '../validators/statsValidators';
+import type { Period } from '../validators/statsValidators';
 
 export interface StatsRow {
   type: string;
@@ -31,6 +31,11 @@ function buildDateFilter(
   };
 }
 
+/**
+ * Counts completed items per content type within the given period.
+ * Uses `completed_at` for date filtering; items with NULL `completed_at` are excluded.
+ * Reference date comes from getClock() so tests can freeze time.
+ */
 export function getStatsByPeriod(
   db: Database.Database,
   userId: string,
@@ -49,6 +54,11 @@ export function getStatsByPeriod(
   `).all(userId, ...params) as StatsRow[];
 }
 
+/**
+ * Counts sessions per content type within the given period.
+ * Unlike getStatsByPeriod, this counts each session independently — an item
+ * watched three times in a period contributes 3 to the total.
+ */
 export function getSessionStatsByPeriod(
   db: Database.Database,
   userId: string,

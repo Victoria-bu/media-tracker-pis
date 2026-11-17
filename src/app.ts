@@ -1,6 +1,6 @@
 import express from 'express';
 import session from 'express-session';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { ENV } from './config/env';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';

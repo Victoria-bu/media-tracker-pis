@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { requireAuth } from '../middleware/auth';
-import { periodSchema, basisSchema, Basis } from '../validators/statsValidators';
+import type { Basis } from '../validators/statsValidators';
+import { periodSchema, basisSchema } from '../validators/statsValidators';
 import * as statsService from '../services/statsService';
 import { logCrud, logValidationError } from '../logger';
 

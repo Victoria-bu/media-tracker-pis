@@ -1,5 +1,5 @@
-import Database from 'better-sqlite3';
-import { CreateSessionData, UpdateSessionData } from '../validators/sessionValidators';
+import type Database from 'better-sqlite3';
+import type { CreateSessionData, UpdateSessionData } from '../validators/sessionValidators';
 
 export interface DbSession {
   id: string;

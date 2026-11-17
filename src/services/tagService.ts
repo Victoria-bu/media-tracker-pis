@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 
 export function getUserTags(db: Database.Database, userId: string): string[] {
   const rows = db

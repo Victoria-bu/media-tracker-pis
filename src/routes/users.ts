@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { requireAuth } from '../middleware/auth';
 import { updateNicknameSchema } from '../validators/userValidators';
 import * as authService from '../services/authService';
