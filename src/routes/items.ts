@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
 import fs from 'fs';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth } from '../middleware/auth';
 import { createItemSchema, updateItemSchema } from '../validators/itemValidators';
 import * as itemService from '../services/itemService';
+import { isAppError } from '../utils/errors';
 import { logCrud, logValidationError } from '../logger';
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
@@ -73,8 +73,8 @@ export function createItemsRouter(db: Database.Database, uploadDir: string): Rou
     try {
       const item = itemService.getItem(db, req.params.id, req.session.userId!);
       res.status(200).json(item);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -92,8 +92,8 @@ export function createItemsRouter(db: Database.Database, uploadDir: string): Rou
       const item = itemService.updateItem(db, req.params.id, req.session.userId!, result.data);
       logCrud('update', 'item', req.session.userId!, req.params.id);
       res.status(200).json(item);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -103,13 +103,14 @@ export function createItemsRouter(db: Database.Database, uploadDir: string): Rou
       itemService.deleteItem(db, req.params.id, req.session.userId!);
       logCrud('delete', 'item', req.session.userId!, req.params.id);
       res.status(204).send();
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
 
   router.post('/:id/cover', requireAuth, (req, res, next) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     upload.single('file')(req, res, async (uploadErr: any) => {
       if (uploadErr) {
         if (uploadErr.code === 'LIMIT_FILE_SIZE') {
@@ -132,8 +133,8 @@ export function createItemsRouter(db: Database.Database, uploadDir: string): Rou
         const item = itemService.setCoverUrl(db, req.params.id, req.session.userId!, coverUrl);
         logCrud('cover_upload', 'item', req.session.userId!, req.params.id);
         res.status(200).json({ coverUrl: item.coverUrl });
-      } catch (err: any) {
-        if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+      } catch (err) {
+        if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
         next(err);
       }
     });
@@ -144,8 +145,8 @@ export function createItemsRouter(db: Database.Database, uploadDir: string): Rou
       itemService.clearCoverUrl(db, req.params.id, req.session.userId!);
       logCrud('cover_delete', 'item', req.session.userId!, req.params.id);
       res.status(204).send();
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });

@@ -1,4 +1,5 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
+import { notFound } from '../utils/errors';
 
 export interface DbCollection {
   id: string;
@@ -76,10 +77,7 @@ export function removeItemFromCollection(
     .prepare('DELETE FROM collection_items WHERE collection_id = ? AND item_id = ?')
     .run(collectionId, itemId);
   if (result.changes === 0) {
-    const err = new Error('Resource not found') as any;
-    err.status = 404;
-    err.code = 'NOT_FOUND';
-    throw err;
+    throw notFound();
   }
 }
 

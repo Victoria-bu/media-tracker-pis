@@ -1,6 +1,5 @@
-import Database from 'better-sqlite3';
-import { v4 as uuidv4 } from 'uuid';
-import { CreateItemData, UpdateItemData } from '../validators/itemValidators';
+import type Database from 'better-sqlite3';
+import type { CreateItemData, UpdateItemData } from '../validators/itemValidators';
 
 export interface DbItem {
   id: string;

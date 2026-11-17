@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { requireAuth } from '../middleware/auth';
 import {
   createCollectionSchema,
@@ -7,6 +7,7 @@ import {
   addItemSchema,
 } from '../validators/collectionValidators';
 import * as collectionService from '../services/collectionService';
+import { isAppError } from '../utils/errors';
 import { logCrud, logValidationError } from '../logger';
 
 export function createCollectionsRouter(db: Database.Database): Router {
@@ -37,8 +38,8 @@ export function createCollectionsRouter(db: Database.Database): Router {
   router.get('/:id', requireAuth, (req, res, next) => {
     try {
       res.status(200).json(collectionService.getCollection(db, req.params.id, req.session.userId!));
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -58,8 +59,8 @@ export function createCollectionsRouter(db: Database.Database): Router {
       );
       logCrud('update', 'collection', req.session.userId!, req.params.id);
       res.status(200).json(col);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -69,8 +70,8 @@ export function createCollectionsRouter(db: Database.Database): Router {
       collectionService.deleteCollection(db, req.params.id, req.session.userId!);
       logCrud('delete', 'collection', req.session.userId!, req.params.id);
       res.status(204).send();
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -90,9 +91,9 @@ export function createCollectionsRouter(db: Database.Database): Router {
       );
       logCrud('add_item', 'collection', req.session.userId!, req.params.id);
       res.status(201).json(membership);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
-      if (err.status === 409) { res.status(409).json({ code: err.code, message: err.message }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+      if (isAppError(err) && err.status === 409) { res.status(409).json({ code: err.code, message: err.message }); return; }
       next(err);
     }
   });
@@ -104,8 +105,8 @@ export function createCollectionsRouter(db: Database.Database): Router {
       );
       logCrud('remove_item', 'collection', req.session.userId!, req.params.id);
       res.status(204).send();
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });

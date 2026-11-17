@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { requireAuth } from '../middleware/auth';
 import { createSessionSchema, updateSessionSchema } from '../validators/sessionValidators';
 import * as sessionService from '../services/sessionService';
+import { isAppError } from '../utils/errors';
 import { logCrud, logValidationError } from '../logger';
 
 export function createSessionsRouter(db: Database.Database): Router {
@@ -12,8 +13,8 @@ export function createSessionsRouter(db: Database.Database): Router {
     try {
       const result = sessionService.listSessions(db, req.params.id, req.session.userId!);
       res.status(200).json(result);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -31,8 +32,8 @@ export function createSessionsRouter(db: Database.Database): Router {
       const session = sessionService.createSession(db, req.params.id, req.session.userId!, result.data);
       logCrud('create', 'session', req.session.userId!, session.id);
       res.status(201).json(session);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -52,8 +53,8 @@ export function createSessionsRouter(db: Database.Database): Router {
       );
       logCrud('update', 'session', req.session.userId!, req.params.sid);
       res.status(200).json(session);
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
@@ -63,8 +64,8 @@ export function createSessionsRouter(db: Database.Database): Router {
       sessionService.deleteSession(db, req.params.id, req.params.sid, req.session.userId!);
       logCrud('delete', 'session', req.session.userId!, req.params.sid);
       res.status(204).send();
-    } catch (err: any) {
-      if (err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
+    } catch (err) {
+      if (isAppError(err) && err.status === 404) { res.status(404).json({ code: 'NOT_FOUND', message: 'Resource not found' }); return; }
       next(err);
     }
   });
