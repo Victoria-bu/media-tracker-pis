@@ -45,6 +45,18 @@ describe('POST /api/v1/auth/register  [REQ-F-001]', () => {
     expect(setCookie[0]).toMatch(/HttpOnly/i);
   });
 
+  it('NF-007-B: session cookie name is "session", not the express-session default "connect.sid"', async () => {
+    const res = await request(app)
+      .post('/api/v1/auth/register')
+      .send({ email: 'cookiename@example.com', password: 'password123', nickname: 'NameTest' });
+
+    expect(res.status).toBe(201);
+    const setCookie: string[] = res.headers['set-cookie'] ?? [];
+    expect(setCookie.length).toBeGreaterThan(0);
+    // cookie must start with "session=", not "connect.sid="
+    expect(setCookie[0]).toMatch(/^session=/);
+  });
+
   it('AC-001 negative: duplicate email → 409 EMAIL_TAKEN', async () => {
     await request(app)
       .post('/api/v1/auth/register')
