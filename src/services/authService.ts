@@ -1,13 +1,18 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import * as userRepo from '../repositories/userRepo';
-import { ApiUser } from '../repositories/userRepo';
+import type { ApiUser } from '../repositories/userRepo';
 import { ENV } from '../config/env';
 import { makeError } from '../utils/errors';
 
 export type { AppError } from '../utils/errors';
 
+/**
+ * Registers a new user account.
+ * Password is hashed with bcrypt before storage; the plain-text password is never persisted.
+ * @throws {AppError} 409 EMAIL_TAKEN if the email address is already registered.
+ */
 export async function register(
   db: Database.Database,
   email: string,
@@ -24,6 +29,12 @@ export async function register(
   return { id: user.id, email: user.email, nickname: user.nickname };
 }
 
+/**
+ * Authenticates a user by email and password.
+ * Returns a minimal user object; session management is the caller's responsibility.
+ * @throws {AppError} 401 INVALID_CREDENTIALS if the email is not found or the password is wrong.
+ *   Both cases return the same error code to prevent email enumeration.
+ */
 export async function login(
   db: Database.Database,
   email: string,
@@ -36,6 +47,10 @@ export async function login(
   return { id: user.id, email: user.email, nickname: user.nickname };
 }
 
+/**
+ * Updates the display nickname for an authenticated user.
+ * Email and password are not affected.
+ */
 export function updateNickname(
   db: Database.Database,
   userId: string,

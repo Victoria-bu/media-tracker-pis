@@ -1,7 +1,7 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import * as statsRepo from '../repositories/statsRepo';
-import { StatsRow } from '../repositories/statsRepo';
-import { Period, Basis } from '../validators/statsValidators';
+import type { StatsRow } from '../repositories/statsRepo';
+import type { Period, Basis } from '../validators/statsValidators';
 
 export interface ApiStats {
   period: Period;
@@ -23,6 +23,13 @@ function aggregateRows(rows: StatsRow[], period: Period, basis: Basis): ApiStats
   return result;
 }
 
+/**
+ * Returns item-count statistics for a user, broken down by content type.
+ * @param period  Time window: `month` (current calendar month), `year` (current year), `all`.
+ * @param basis   Counting method:
+ *   - `completedAt` — counts items with `status = completed` and a matching `completed_at` date.
+ *   - `sessions` — counts distinct sessions regardless of item status.
+ */
 export function getStats(
   db: Database.Database,
   userId: string,

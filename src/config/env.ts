@@ -1,3 +1,8 @@
+/**
+ * Runtime configuration loaded from environment variables.
+ * All values have safe development defaults; production deployments must
+ * override at minimum SESSION_SECRET and DB_PATH.
+ */
 export const ENV = {
   PORT: process.env.PORT ?? '3000',
   NODE_ENV: process.env.NODE_ENV ?? 'development',

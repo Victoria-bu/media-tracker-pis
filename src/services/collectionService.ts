@@ -1,8 +1,8 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import * as collectionRepo from '../repositories/collectionRepo';
 import * as itemRepo from '../repositories/itemRepo';
-import { DbCollection, DbCollectionItem } from '../repositories/collectionRepo';
+import type { DbCollection, DbCollectionItem } from '../repositories/collectionRepo';
 import { notFound, makeError } from '../utils/errors';
 
 export type { AppError } from '../utils/errors';
@@ -46,10 +46,15 @@ function toApiItem(item: DbCollectionItem): ApiCollectionItem {
   };
 }
 
+/** Returns all collections owned by the user (without their items). */
 export function listCollections(db: Database.Database, userId: string): ApiCollection[] {
   return collectionRepo.getUserCollections(db, userId).map(toApiCollection);
 }
 
+/**
+ * Returns a collection with its full item list.
+ * @throws {AppError} 404 NOT_FOUND if collection does not exist or belongs to another user.
+ */
 export function getCollection(
   db: Database.Database,
   id: string,
@@ -60,6 +65,10 @@ export function getCollection(
   return { ...toApiCollection(col), items };
 }
 
+/**
+ * Creates an empty named collection for the user.
+ * @param name  Human-readable name; uniqueness is not enforced at the DB level.
+ */
 export function createCollection(
   db: Database.Database,
   userId: string,
@@ -69,6 +78,10 @@ export function createCollection(
   return toApiCollection(collectionRepo.createCollection(db, id, userId, name));
 }
 
+/**
+ * Renames a collection.
+ * @throws {AppError} 404 NOT_FOUND if collection does not exist or belongs to another user.
+ */
 export function updateCollection(
   db: Database.Database,
   id: string,
@@ -79,11 +92,22 @@ export function updateCollection(
   return toApiCollection(collectionRepo.updateCollection(db, id, name));
 }
 
+/**
+ * Deletes a collection. Items inside it remain in the catalog.
+ * @throws {AppError} 404 NOT_FOUND if collection does not exist or belongs to another user.
+ */
 export function deleteCollection(db: Database.Database, id: string, userId: string): void {
   assertOwner(collectionRepo.getCollectionById(db, id), userId);
   collectionRepo.deleteCollection(db, id);
 }
 
+/**
+ * Adds an existing catalog item to a collection (many-to-many).
+ * Both the collection and the item must belong to the same user.
+ * Runs inside a transaction to prevent partial state.
+ * @throws {AppError} 409 ITEM_ALREADY_IN_COLLECTION if the item is already a member.
+ * @throws {AppError} 404 NOT_FOUND if the collection or item does not exist / belong to user.
+ */
 export function addItemToCollection(
   db: Database.Database,
   collectionId: string,
@@ -107,6 +131,11 @@ export function addItemToCollection(
   return { itemId, collectionId };
 }
 
+/**
+ * Removes an item from a collection without deleting it from the catalog.
+ * @throws {AppError} 404 NOT_FOUND if the collection does not exist, belongs to another user,
+ *   or the item was not a member of this collection.
+ */
 export function removeItemFromCollection(
   db: Database.Database,
   collectionId: string,

@@ -1,8 +1,8 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import * as itemRepo from '../repositories/itemRepo';
-import { DbItem } from '../repositories/itemRepo';
-import { CreateItemData, UpdateItemData } from '../validators/itemValidators';
+import type { DbItem } from '../repositories/itemRepo';
+import type { CreateItemData, UpdateItemData } from '../validators/itemValidators';
 import { notFound } from '../utils/errors';
 
 export type { AppError } from '../utils/errors';
@@ -50,14 +50,28 @@ function assertOwner(item: DbItem | undefined, userId: string): DbItem {
   return item;
 }
 
+/**
+ * Returns all catalog items owned by the given user, sorted by creation date descending.
+ * @param db  Active SQLite connection.
+ * @param userId  ID of the authenticated user.
+ */
 export function listItems(db: Database.Database, userId: string): ApiItem[] {
   return itemRepo.getUserItems(db, userId).map(toApi);
 }
 
+/**
+ * Returns a single catalog item by its ID.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function getItem(db: Database.Database, id: string, userId: string): ApiItem {
   return toApi(assertOwner(itemRepo.getItemById(db, id), userId));
 }
 
+/**
+ * Creates a new catalog item and returns it.
+ * A UUID is generated internally; the caller supplies only business data.
+ * Tags are stored as a JSON array in SQLite and returned as a parsed string[].
+ */
 export function createItem(
   db: Database.Database,
   userId: string,
@@ -67,6 +81,11 @@ export function createItem(
   return toApi(itemRepo.createItem(db, id, userId, data));
 }
 
+/**
+ * Applies a partial update to an existing catalog item.
+ * Only fields present in `data` are changed; omitted fields keep their current values.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function updateItem(
   db: Database.Database,
   id: string,
@@ -77,11 +96,21 @@ export function updateItem(
   return toApi(itemRepo.updateItem(db, id, data));
 }
 
+/**
+ * Permanently deletes a catalog item and all its associated sessions.
+ * Removal from collections is handled by ON DELETE CASCADE in the DB schema.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function deleteItem(db: Database.Database, id: string, userId: string): void {
   assertOwner(itemRepo.getItemById(db, id), userId);
   itemRepo.deleteItem(db, id);
 }
 
+/**
+ * Stores the cover image URL for a catalog item and returns the updated item.
+ * The file must already be saved to disk before calling this function.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function setCoverUrl(
   db: Database.Database,
   id: string,
@@ -93,6 +122,11 @@ export function setCoverUrl(
   return toApi(itemRepo.getItemById(db, id)!);
 }
 
+/**
+ * Removes the cover image URL from a catalog item (sets cover_url to NULL).
+ * Does not delete the file from disk — that is the caller's responsibility.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function clearCoverUrl(db: Database.Database, id: string, userId: string): void {
   assertOwner(itemRepo.getItemById(db, id), userId);
   itemRepo.clearCoverUrl(db, id);

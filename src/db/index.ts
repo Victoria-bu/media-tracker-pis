@@ -5,6 +5,11 @@ import { ENV } from '../config/env';
 
 let db: Database.Database | null = null;
 
+/**
+ * Returns the application-wide SQLite singleton, creating it on first call.
+ * WAL mode and foreign-key enforcement are enabled on every connection.
+ * The data directory is created automatically if it does not exist.
+ */
 export function getDb(): Database.Database {
   if (!db) {
     const dir = path.dirname(ENV.DB_PATH);
@@ -17,6 +22,10 @@ export function getDb(): Database.Database {
   return db;
 }
 
+/**
+ * Creates an in-memory SQLite database with the full schema applied.
+ * Intended for integration tests only — each call returns an independent DB.
+ */
 export function createTestDb(): Database.Database {
   const testDb = new Database(':memory:');
   testDb.pragma('journal_mode = WAL');

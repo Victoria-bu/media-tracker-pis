@@ -1,0 +1,962 @@
+<title>Coding Convention</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+:root {
+  --bg:       #f7f8fc;
+  --surface:  #ffffff;
+  --border:   #e2e8f0;
+  --accent:   #3178c6;
+  --accent-dim: #dbeafe;
+  --text:     #1e2535;
+  --muted:    #64748b;
+  --code-bg:  #f1f5f9;
+  --code-border: #cbd5e1;
+  --tag-bg:   #eff6ff;
+  --tag-text: #1d4ed8;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --border:   #30363d;
+    --accent:   #58a6ff;
+    --accent-dim: #1a3a5c;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --code-bg:  #1c2128;
+    --code-border: #30363d;
+    --tag-bg:   #0d2240;
+    --tag-text: #93c5fd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --border:   #30363d;
+  --accent:   #58a6ff;
+  --accent-dim: #1a3a5c;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --code-bg:  #1c2128;
+  --code-border: #30363d;
+  --tag-bg:   #0d2240;
+  --tag-text: #93c5fd;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding-inline: 0;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-areas: "nav main";
+  min-height: 100vh;
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 0;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.sidebar {
+  grid-area: nav;
+  position: sticky;
+  top: env(safe-area-inset-top, 0);
+  height: 100vh;
+  overflow-y: auto;
+  padding: 36px 0 36px 20px;
+  border-right: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-right: 16px;
+}
+.sidebar-logo svg { flex-shrink: 0; }
+.sidebar-logo-text { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; line-height: 1.3; }
+
+.nav-section { margin-bottom: 20px; }
+.nav-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 16px 6px 0;
+  display: block;
+}
+.nav-link {
+  display: block;
+  padding: 4px 16px 4px 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.nav-link:hover { color: var(--text); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+
+/* ── Main ─────────────────────────────────────────────── */
+main {
+  grid-area: main;
+  padding: 48px 48px 80px;
+  max-width: 820px;
+}
+
+/* ── Page header ─────────────────────────────────────── */
+.page-header {
+  margin-bottom: 52px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+.page-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 10px;
+}
+.page-title {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  margin: 0 0 10px;
+  line-height: 1.1;
+}
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ── Sections ─────────────────────────────────────────── */
+.section { margin-bottom: 56px; }
+.section-anchor { scroll-margin-top: 24px; }
+
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h2 .section-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--accent-dim);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+h3 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 28px 0 10px;
+}
+
+p { margin: 0 0 14px; color: var(--text); }
+
+/* ── Rules ───────────────────────────────────────────── */
+.rule-block {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--surface);
+}
+.rule-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.rule-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+.rule-icon.must { background: #dcfce7; color: #15803d; }
+.rule-icon.avoid { background: #fee2e2; color: #b91c1c; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .rule-icon.must { background: #14532d; color: #86efac; }
+  :root:not([data-theme="light"]) .rule-icon.avoid { background: #450a0a; color: #fca5a5; }
+}
+:root[data-theme="dark"] .rule-icon.must { background: #14532d; color: #86efac; }
+:root[data-theme="dark"] .rule-icon.avoid { background: #450a0a; color: #fca5a5; }
+
+.rule-text { font-size: 14px; line-height: 1.55; }
+.rule-text strong { font-weight: 600; }
+
+/* ── Code blocks ─────────────────────────────────────── */
+pre {
+  margin: 0;
+  background: var(--code-bg);
+  border-top: 1px solid var(--code-border);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+pre code.hljs {
+  background: transparent;
+  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  padding: 14px 16px;
+  display: block;
+}
+
+/* hljs theme — overrides for both modes */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-built_in { color: var(--accent); font-weight: 500; }
+.hljs-string { color: #0ea5e9; }
+.hljs-comment { color: var(--muted); font-style: italic; }
+.hljs-number { color: #e76f51; }
+.hljs-title.function_ { color: #7c3aed; }
+.hljs-title.class_ { color: #0891b2; }
+.hljs-params { color: var(--text); }
+.hljs-type { color: #0891b2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hljs-string { color: #7dd3fc; }
+  :root:not([data-theme="light"]) .hljs-title.function_ { color: #c4b5fd; }
+  :root:not([data-theme="light"]) .hljs-title.class_ { color: #67e8f9; }
+  :root:not([data-theme="light"]) .hljs-type { color: #67e8f9; }
+}
+:root[data-theme="dark"] .hljs-string { color: #7dd3fc; }
+:root[data-theme="dark"] .hljs-title.function_ { color: #c4b5fd; }
+:root[data-theme="dark"] .hljs-title.class_ { color: #67e8f9; }
+:root[data-theme="dark"] .hljs-type { color: #67e8f9; }
+
+/* standalone code (no border on top) */
+.code-standalone {
+  border-radius: 10px;
+  border: 1px solid var(--code-border);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.code-standalone pre { border-top: none; }
+
+/* ── Table ───────────────────────────────────────────── */
+.conv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+}
+.conv-table th {
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.conv-table td {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+}
+.conv-table tr:nth-child(even) td { background: var(--code-bg); }
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent);
+}
+
+/* ── Reference box ───────────────────────────────────── */
+.ref-box {
+  border: 1px solid var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--surface);
+  margin-bottom: 20px;
+  font-size: 13.5px;
+}
+.ref-box a { color: var(--accent); font-weight: 500; }
+
+/* ── TOC label (mobile) ──────────────────────────────── */
+.mobile-nav-toggle {
+  display: none;
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .shell {
+    display: block;
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    overflow: visible;
+  }
+  .sidebar-logo { padding: 16px 20px 0; }
+  .nav-section { padding: 0 20px; }
+  .mobile-nav-toggle { display: block; }
+  .sidebar-links { display: none; padding-bottom: 12px; }
+  .sidebar-links.open { display: block; }
+  main { padding: 28px 20px 60px; }
+  .page-title { font-size: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+
+<div class="shell">
+
+  <!-- ── Sidebar ─────────────────────── -->
+  <nav class="sidebar" aria-label="Навігація">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="6" fill="#3178c6"/>
+        <path d="M7 20v-2.5c1.1.65 2.5 1 3.8 1 1.6 0 2.4-.5 2.4-1.5 0-.9-.7-1.4-2.3-1.9-2.3-.8-3.4-1.9-3.4-3.6 0-2 1.6-3.3 4.2-3.3 1.3 0 2.4.25 3.3.65v2.4c-.9-.5-2-.8-3.1-.8-1.4 0-2.1.5-2.1 1.3 0 .8.7 1.3 2.2 1.8 2.4.8 3.5 1.9 3.5 3.7 0 2.1-1.6 3.4-4.4 3.4C9.4 21 8 20.7 7 20Z" fill="white"/>
+        <path d="M22 10h-4.2v10H15V10h-4.2V8H22v2Z" fill="white"/>
+      </svg>
+      <span class="sidebar-logo-text">Media Tracker<br>Coding Convention</span>
+    </div>
+
+    <button class="mobile-nav-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+      ☰ Зміст
+    </button>
+    <div class="sidebar-links">
+      <div class="nav-section">
+        <span class="nav-label">Загальне</span>
+        <a href="#base" class="nav-link">1. Базовий стандарт</a>
+        <a href="#naming" class="nav-link">2. Іменування</a>
+        <a href="#typing" class="nav-link">3. Типізація</a>
+        <a href="#formatting" class="nav-link">4. Форматування</a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">Структура</span>
+        <a href="#files" class="nav-link">5. Файли та директорії</a>
+        <a href="#imports" class="nav-link">6. Імпорти</a>
+        <a href="#functions" class="nav-link">7. Функції</a>
+        <a href="#errors" class="nav-link">8. Обробка помилок</a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">Стек</span>
+        <a href="#comments" class="nav-link">9. Коментарі</a>
+        <a href="#backend" class="nav-link">10. Backend (Node/Express)</a>
+        <a href="#frontend" class="nav-link">11. Frontend (React)</a>
+        <a href="#tools" class="nav-link">12. Інструменти</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Main ───────────────────────── -->
+  <main>
+    <header class="page-header">
+      <p class="page-eyebrow">Лабораторна робота · Пункт 1</p>
+      <h1 class="page-title">Coding Convention</h1>
+      <p style="color:var(--muted);margin:0 0 4px">Узгоджений стандарт оформлення коду проєкту <strong style="color:var(--text)">Media Tracker PIS</strong></p>
+      <div class="page-meta">
+        <span class="badge">TypeScript 5</span>
+        <span class="badge">Node.js / Express</span>
+        <span class="badge">React 19</span>
+        <span class="badge">Vite</span>
+        <span class="badge">better-sqlite3</span>
+        <span class="badge">Zod</span>
+      </div>
+    </header>
+
+    <!-- 1. Базовий стандарт -->
+    <section class="section" id="base">
+      <h2 class="section-anchor"><span class="section-num">01</span> Базовий стандарт</h2>
+      <p>Основою конвенції є <strong>Google TypeScript Style Guide</strong> — офіційно визнаний стандарт для TypeScript-проєктів. Усі правила нижче або відповідають йому, або є задокументованими відхиленнями, зумовленими особливостями стеку.</p>
+
+      <div class="ref-box">
+        <strong>Первинне джерело:</strong> <a href="https://google.github.io/styleguide/tsguide.html" target="_blank">google.github.io/styleguide/tsguide.html</a><br>
+        Де Google TS Guide мовчить — застосовується
+        <a href="https://www.typescriptlang.org/docs/handbook/" target="_blank">TypeScript Handbook</a>.
+      </div>
+
+      <p>TypeScript скомпільований у <strong>strict mode</strong> (<code>tsconfig.json: "strict": true</code>), що автоматично включає: <code>strictNullChecks</code>, <code>noImplicitAny</code>, <code>strictFunctionTypes</code> та інші перевірки.</p>
+    </section>
+
+    <!-- 2. Іменування -->
+    <section class="section" id="naming">
+      <h2 class="section-anchor"><span class="section-num">02</span> Іменування</h2>
+
+      <table class="conv-table">
+        <thead>
+          <tr>
+            <th>Сутність</th>
+            <th>Стиль</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Змінна, параметр, поле об'єкта</td>
+            <td><code>camelCase</code></td>
+            <td><code>userId</code>, <code>coverUrl</code>, <code>newItem</code></td>
+          </tr>
+          <tr>
+            <td>Функція, метод</td>
+            <td><code>camelCase</code></td>
+            <td><code>handleSave</code>, <code>getItemById</code>, <code>toApi</code></td>
+          </tr>
+          <tr>
+            <td>Інтерфейс, тип, enum</td>
+            <td><code>PascalCase</code></td>
+            <td><code>ApiItem</code>, <code>DbItem</code>, <code>AppError</code></td>
+          </tr>
+          <tr>
+            <td>React-компонент (функція)</td>
+            <td><code>PascalCase</code></td>
+            <td><code>ItemDetail</code>, <code>AddSheet</code>, <code>Cover</code></td>
+          </tr>
+          <tr>
+            <td>Константа рівня модуля</td>
+            <td><code>SCREAMING_SNAKE_CASE</code></td>
+            <td><code>ALLOWED_MIME</code>, <code>MAX_COVER_SIZE</code></td>
+          </tr>
+          <tr>
+            <td>Файл</td>
+            <td><code>camelCase</code></td>
+            <td><code>itemService.ts</code>, <code>sessionRepo.ts</code></td>
+          </tr>
+          <tr>
+            <td>Директорія</td>
+            <td><code>camelCase</code></td>
+            <td><code>routes/</code>, <code>services/</code>, <code>repositories/</code></td>
+          </tr>
+          <tr>
+            <td>DB-поле (SQL/SQLite)</td>
+            <td><code>snake_case</code></td>
+            <td><code>user_id</code>, <code>cover_url</code>, <code>created_at</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Префікс <strong>is / has / can / should</strong> для булевих змінних і параметрів.</div>
+        </div>
+        <pre><code class="language-typescript">const isLoading = true;
+const hasRating = item.rating !== null;
+const canDelete = sessions.length === 0;</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon avoid">✗</span>
+          <div class="rule-text">Однолітерні імена (крім лічильників циклу <code>i</code>, <code>j</code> та параметрів нижчого рівня <code>_req</code>).</div>
+        </div>
+        <pre><code class="language-typescript">// ✗ уникати
+const f = e.target.files?.[0];
+// ✓ замінити на
+const file = e.target.files?.[0];</code></pre>
+      </div>
+    </section>
+
+    <!-- 3. Типізація -->
+    <section class="section" id="typing">
+      <h2 class="section-anchor"><span class="section-num">03</span> Типізація</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Явні <strong>interface</strong> для форм API-відповідей і DB-рядків. <strong>type</strong> — для union-типів та псевдонімів.</div>
+        </div>
+        <pre><code class="language-typescript">// API shape — interface
+export interface ApiItem {
+  id: string;
+  title: string;
+  type: 'book' | 'series' | 'film';
+  rating: number | null;
+  tags: string[];
+  // ...
+}
+
+// Union alias — type
+type ItemStatus = 'planned' | 'in_progress' | 'completed' | 'on_hold';</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Runtime-валідація вхідних даних через <strong>Zod</strong>-схеми. Статичні типи виводяться з них через <code>z.infer</code>.</div>
+        </div>
+        <pre><code class="language-typescript">export const createItemSchema = z.object({
+  title: z.string().min(1),
+  type: z.enum(['book', 'series', 'film']),
+  rating: z.number().int().min(0).max(10).nullable().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export type CreateItemData = z.infer<typeof createItemSchema>;</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon avoid">✗</span>
+          <div class="rule-text">Заборонено <code>any</code> (strict mode). Для невідомих форм використовується <code>unknown</code> з подальшим звуженням типу.</div>
+        </div>
+        <pre><code class="language-typescript">// ✗ уникати
+} catch (err: any) { console.log(err.status); }
+
+// ✓ використовувати
+} catch (err: unknown) {
+  const apiErr = err as { status?: number };
+  if (apiErr.status === 400) { /* ... */ }
+}</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Явне позначення <code>null</code> як можливого значення (<code>string | null</code>). Не змішувати з <code>undefined</code> без потреби.</div>
+        </div>
+        <pre><code class="language-typescript">// DB-поля, що можуть бути відсутні — null
+cover_url: string | null;
+completed_at: string | null;
+
+// Необов'язкові поля форми — undefined через optional()
+notes?: string | null;  // може бути відсутнє або явно null</code></pre>
+      </div>
+    </section>
+
+    <!-- 4. Форматування -->
+    <section class="section" id="formatting">
+      <h2 class="section-anchor"><span class="section-num">04</span> Форматування</h2>
+
+      <table class="conv-table">
+        <thead>
+          <tr><th>Параметр</th><th>Правило</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Відступи</td><td>2 пробіли (не tabs)</td></tr>
+          <tr><td>Лапки — backend</td><td>Одинарні <code>'express'</code></td></tr>
+          <tr><td>Лапки — frontend JSX</td><td>Подвійні <code>"className"</code></td></tr>
+          <tr><td>Крапка з комою</td><td>Обов'язкова в кінці виразів</td></tr>
+          <tr><td>Довжина рядка</td><td>Не більше 100 символів; довші — переносяться</td></tr>
+          <tr><td>Trailing comma</td><td>Так у багаторядкових структурах</td></tr>
+          <tr><td>Порожні рядки</td><td>Один між блоками функцій; немає в кінці файлу</td></tr>
+        </tbody>
+      </table>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Довгі виклики і об'єкти розбиваються по одному параметру на рядок.</div>
+        </div>
+        <pre><code class="language-typescript">db.prepare(`
+  INSERT INTO items
+    (id, user_id, title, type, status, rating, notes, tags,
+     completed_at, author, pages, seasons, director, duration)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`).run(
+  id, userId, data.title, data.type,
+  data.status ?? 'planned',
+  data.rating ?? null,
+  // ...
+);</code></pre>
+      </div>
+    </section>
+
+    <!-- 5. Файли та директорії -->
+    <section class="section" id="files">
+      <h2 class="section-anchor"><span class="section-num">05</span> Файли та директорії</h2>
+
+      <p>Backend дотримується чіткої шарової архітектури:</p>
+      <div class="code-standalone">
+        <pre><code class="language-plaintext">src/
+├── server.ts         # точка входу — підключає db і app
+├── app.ts            # налаштування Express + middleware
+├── config/           # змінні середовища (ENV)
+├── db/               # ініціалізація SQLite + міграції
+├── middleware/       # auth, error-handler
+├── routes/           # HTTP-маршрути (тонкий шар)
+├── services/         # бізнес-логіка; не знає про HTTP
+├── repositories/     # прямі SQL-запити; не знає про бізнес-логіку
+├── validators/       # Zod-схеми вхідних даних
+├── types/            # глобальні типи (розширення express-session)
+└── utils/            # дрібні утиліти (errors.ts, тощо)</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Один файл — одна відповідальність. Не поєднувати route-handler і бізнес-логіку в одному файлі.</div>
+        </div>
+        <pre><code class="language-typescript">// routes/items.ts — лише HTTP: парсинг, відповідь, статус-коди
+router.get('/', requireAuth, (req, res) => {
+  const items = itemService.listItems(db, req.session.userId!);
+  res.json(items);
+});
+
+// services/itemService.ts — лише логіка, не знає про res/req
+export function listItems(db: Database, userId: string): ApiItem[] {
+  return itemRepo.getUserItems(db, userId).map(toApi);
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- 6. Імпорти -->
+    <section class="section" id="imports">
+      <h2 class="section-anchor"><span class="section-num">06</span> Імпорти</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Порядок блоків імпорту: (1) вбудовані Node-модулі, (2) зовнішні пакети, (3) внутрішні (<code>../</code>). Між групами — порожній рядок.</div>
+        </div>
+        <pre><code class="language-typescript">import path from 'path';
+import fs from 'fs';
+
+import { Router } from 'express';
+import multer from 'multer';
+import Database from 'better-sqlite3';
+
+import { requireAuth } from '../middleware/auth';
+import { createItemSchema } from '../validators/itemValidators';
+import * as itemService from '../services/itemService';</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Namespace-імпорт (<code>import * as</code>) для сервісів і репозиторіїв. Іменований імпорт — для конкретних функцій і типів.</div>
+        </div>
+        <pre><code class="language-typescript">import * as itemService from '../services/itemService';   // namespace
+import * as itemRepo   from '../repositories/itemRepo';    // namespace
+
+import { notFound }    from '../utils/errors';             // named
+import { DbItem }      from '../repositories/itemRepo';    // named type</code></pre>
+      </div>
+    </section>
+
+    <!-- 7. Функції -->
+    <section class="section" id="functions">
+      <h2 class="section-anchor"><span class="section-num">07</span> Функції</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Іменовані <strong>function-декларації</strong> на рівні модуля в backend; стрілкові функції — для коротких утиліт і колбеків.</div>
+        </div>
+        <pre><code class="language-typescript">// ✓ іменована декларація — рівень модуля
+export function createItem(db: Database, id: string, data: CreateItemData): ApiItem {
+  // ...
+}
+
+// ✓ стрілкова — утиліта в одному рядку
+const mimeToExt = (mime: string): string =>
+  ({ 'image/jpeg': '.jpg', 'image/png': '.png' })[mime] ?? '';</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">React-компоненти — завжди <strong>function-декларації</strong> (не стрілкові), щоб ім'я було видиме в стек-трейсах.</div>
+        </div>
+        <pre><code class="language-typescript">// ✓ правильно
+function ItemDetail({ itemId, onBack }: ItemDetailProps) {
+  // ...
+}
+
+// ✗ уникати в компонентах
+const ItemDetail = ({ itemId, onBack }: ItemDetailProps) => { ... };</code></pre>
+      </div>
+    </section>
+
+    <!-- 8. Обробка помилок -->
+    <section class="section" id="errors">
+      <h2 class="section-anchor"><span class="section-num">08</span> Обробка помилок</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Всі доменні помилки формуються через централізовану фабрику <code>makeError</code> / <code>notFound</code> з <code>utils/errors.ts</code>.</div>
+        </div>
+        <pre><code class="language-typescript">// utils/errors.ts — фабрика
+export function makeError(code: string, message: string, status: number): AppError {
+  const err = new Error(message) as AppError;
+  err.code = code;
+  err.status = status;
+  return err;
+}
+export const notFound = () => makeError('NOT_FOUND', 'Resource not found', 404);
+
+// service — throw стандартної помилки
+function assertOwner(item: DbItem | undefined, userId: string): DbItem {
+  if (!item || item.user_id !== userId) throw notFound();
+  return item;
+}</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">У frontend <code>catch</code>-блоках, де помилка не впливає на UX, тіло залишається порожнім з явним коментарем або взагалі без тіла (non-fatal).</div>
+        </div>
+        <pre><code class="language-typescript">try {
+  const { coverUrl } = await api.items.uploadCover(newItem.id, coverFile);
+  newItem.coverUrl = coverUrl;
+} catch { /* non-fatal — cover upload failure doesn't block item creation */ }</code></pre>
+      </div>
+    </section>
+
+    <!-- 9. Коментарі -->
+    <section class="section" id="comments">
+      <h2 class="section-anchor"><span class="section-num">09</span> Коментарі</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Коментарі пишуться лише тоді, коли <strong>«чому»</strong> не очевидне з коду. Добре названі ідентифікатори самі пояснюють «що».</div>
+        </div>
+        <pre><code class="language-typescript">// ✓ пояснює неочевидне перетворення дати SQLite → ISO 8601
+createdAt: new Date(item.created_at.replace(' ', 'T') + 'Z').toISOString(),
+
+// ✗ зайвий — назва і так зрозуміла
+// get item by id
+export function getItemById(db: Database, id: string): DbItem | undefined { ... }</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Секційні розділювачі у великих файлах — однолінійні ASCII-коментарі у форматі <code>// ─── Назва ──────</code>.</div>
+        </div>
+        <pre><code class="language-typescript">// ─── Icons ────────────────────────────────────────────────────────────────────
+// ─── Auth Screen ──────────────────────────────────────────────────────────────
+// ─── Item Detail ──────────────────────────────────────────────────────────────</code></pre>
+      </div>
+
+      <p>JSDoc не використовується: проєкт не публікує публічного API, а внутрішні типи описані через TypeScript-інтерфейси.</p>
+    </section>
+
+    <!-- 10. Backend -->
+    <section class="section" id="backend">
+      <h2 class="section-anchor"><span class="section-num">10</span> Backend — Node.js / Express</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Route-handler завжди закінчується або <code>res.json()</code> / <code>res.status().json()</code>, або викликом <code>next(err)</code>. Не залишати відповідь "висіти".</div>
+        </div>
+        <pre><code class="language-typescript">router.post('/', requireAuth, (req, res, next) => {
+  try {
+    const data = createItemSchema.parse(req.body);
+    const item = itemService.createItem(db, uuidv4(), req.session.userId!, data);
+    res.status(201).json(item);
+  } catch (err) {
+    next(err);  // передаємо в centralized error-handler
+  }
+});</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Змінні середовища виключно через <code>config/env.ts</code> (об'єкт <code>ENV</code>). Пряме звернення до <code>process.env</code> у сервісах/роутах заборонене.</div>
+        </div>
+        <pre><code class="language-typescript">// config/env.ts — одне місце
+export const ENV = {
+  PORT: process.env.PORT ?? '3000',
+  SESSION_SECRET: process.env.SESSION_SECRET ?? 'dev-secret',
+};
+
+// server.ts — через ENV
+app.listen(Number(ENV.PORT), () => { /* ... */ });</code></pre>
+      </div>
+    </section>
+
+    <!-- 11. Frontend -->
+    <section class="section" id="frontend">
+      <h2 class="section-anchor"><span class="section-num">11</span> Frontend — React / Vite</h2>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Усі API-виклики через <strong>єдиний об'єкт <code>api</code></strong> з <code>lib/api.ts</code>. Прямий <code>fetch</code> у компонентах заборонений.</div>
+        </div>
+        <pre><code class="language-typescript">// ✓ через централізований клієнт
+const item = await api.items.get(itemId);
+const session = await api.sessions.create(itemId, { date, rating, note });
+
+// ✗ прямий fetch в компоненті — заборонено
+const res = await fetch('/api/v1/items/' + itemId);</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">State локальний у компоненті або піднятий на рівень root <code>App</code>. Зовнішній state-менеджер не використовується (достатньо prop drilling для поточного масштабу).</div>
+        </div>
+        <pre><code class="language-typescript">// App.tsx — спільний стан
+const [items, setItems] = useState&lt;ApiItem[]&gt;([]);
+const [collections, setCollections] = useState&lt;ApiCollection[]&gt;([]);
+
+// Передача донизу
+&lt;ItemDetail
+  itemId={openItemId}
+  collections={collections}
+  onUpdated={handleItemUpdated}
+/&gt;</code></pre>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-header">
+          <span class="rule-icon must">✓</span>
+          <div class="rule-text">Вся стилізація — CSS-класи в <code>index.css</code>. Inline-стилі використовуються лише для динамічних значень, що не можна передбачити статично.</div>
+        </div>
+        <pre><code class="language-typescript">// ✓ статичний вигляд — клас
+&lt;span className="status-pill status-completed"&gt;Completed&lt;/span&gt;
+
+// ✓ динамічне значення — inline
+&lt;i style={{ width: `${progressPercent}%` }} /&gt;
+
+// ✗ статичні кольори/відступи inline
+&lt;div style={{ padding: "14px 16px", background: "#fbfaf6" }}&gt;</code></pre>
+      </div>
+    </section>
+
+    <!-- 12. Інструменти -->
+    <section class="section" id="tools">
+      <h2 class="section-anchor"><span class="section-num">12</span> Інструменти та конфігурація</h2>
+
+      <table class="conv-table">
+        <thead>
+          <tr><th>Інструмент</th><th>Призначення</th><th>Конфіг</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>TypeScript</strong></td>
+            <td>Статична типізація. <code>strict: true</code></td>
+            <td><code>tsconfig.json</code></td>
+          </tr>
+          <tr>
+            <td><strong>tsx</strong></td>
+            <td>Dev-сервер backend (watch mode)</td>
+            <td><code>package.json scripts.dev</code></td>
+          </tr>
+          <tr>
+            <td><strong>Vite</strong></td>
+            <td>Bundler + dev-сервер frontend</td>
+            <td><code>client/vite.config.ts</code></td>
+          </tr>
+          <tr>
+            <td><strong>Zod</strong></td>
+            <td>Runtime-валідація HTTP-тіл</td>
+            <td>в <code>validators/*.ts</code></td>
+          </tr>
+          <tr>
+            <td><strong>Vitest</strong></td>
+            <td>Unit + integration тести</td>
+            <td><code>vitest.config.ts</code></td>
+          </tr>
+          <tr>
+            <td><strong>ESLint</strong></td>
+            <td>Не налаштований (рекомендується додати)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>Prettier</strong></td>
+            <td>Не налаштований (рекомендується додати)</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="ref-box">
+        <strong>Рекомендація:</strong> для автоматичного форматування рекомендується додати <code>prettier</code> з конфігурацією: <code>singleQuote: true</code> (backend) / <code>singleQuote: false</code> (frontend), <code>semi: true</code>, <code>tabWidth: 2</code>, <code>printWidth: 100</code>.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+hljs.highlightAll();
+
+// Active nav link on scroll
+const links = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('.section-anchor');
+
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => obs.observe(s));
+</script>

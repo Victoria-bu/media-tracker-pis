@@ -1,9 +1,9 @@
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import * as sessionRepo from '../repositories/sessionRepo';
 import * as itemRepo from '../repositories/itemRepo';
-import { DbSession } from '../repositories/sessionRepo';
-import { CreateSessionData, UpdateSessionData } from '../validators/sessionValidators';
+import type { DbSession } from '../repositories/sessionRepo';
+import type { CreateSessionData, UpdateSessionData } from '../validators/sessionValidators';
 import { notFound } from '../utils/errors';
 
 export type { AppError } from '../utils/errors';
@@ -36,6 +36,11 @@ function assertSessionOwner(
   return session;
 }
 
+/**
+ * Returns all sessions for a catalog item, sorted by date descending.
+ * @param itemId  ID of the parent catalog item.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function listSessions(
   db: Database.Database,
   itemId: string,
@@ -46,6 +51,12 @@ export function listSessions(
   return { sessions, total: sessions.length };
 }
 
+/**
+ * Records a new viewing/reading session for a catalog item.
+ * Each session stores an independent date, rating (0–10) and note.
+ * Multiple sessions per item are allowed; they do not affect `item.rating` directly.
+ * @throws {AppError} 404 NOT_FOUND if the item does not exist or belongs to another user.
+ */
 export function createSession(
   db: Database.Database,
   itemId: string,
@@ -57,6 +68,12 @@ export function createSession(
   return toApi(sessionRepo.createSession(db, id, itemId, data));
 }
 
+/**
+ * Applies a partial update to an existing session.
+ * The `itemId` parameter is verified to match the session's parent item
+ * (prevents cross-item session manipulation via URL manipulation).
+ * @throws {AppError} 404 NOT_FOUND if the session or item does not exist / belong to user.
+ */
 export function updateSession(
   db: Database.Database,
   itemId: string,
@@ -69,6 +86,11 @@ export function updateSession(
   return toApi(sessionRepo.updateSession(db, sessionId, data));
 }
 
+/**
+ * Permanently deletes a session record.
+ * The parent catalog item and other sessions are unaffected.
+ * @throws {AppError} 404 NOT_FOUND if the session or item does not exist / belong to user.
+ */
 export function deleteSession(
   db: Database.Database,
   itemId: string,
