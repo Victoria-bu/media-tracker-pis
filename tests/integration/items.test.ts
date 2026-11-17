@@ -235,7 +235,7 @@ describe('PATCH /api/v1/items/:id  [REQ-F-008]', () => {
     expect(res.body.rating).toBe(8);
   });
 
-  it('update tags → tags replaced', async () => {
+  it('AC-010: update tags → tags replaced (full array replace via PATCH)', async () => {
     const created = (await agent.post('/api/v1/items')
       .send({ title: 'Book', type: 'book', tags: ['a', 'b'] })).body;
 

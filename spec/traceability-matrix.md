@@ -20,7 +20,7 @@
 | REQ-F-007 | AC-007 | Adding a New Item | 2 | `POST /items` | tests/integration/items.test.ts | src/routes/items.ts, src/services/itemService.ts | Add item sheet | docs/user-guide.md §3 |
 | REQ-F-008 | AC-008 | — | 2 | `PATCH /items/{id}` | tests/integration/items.test.ts | src/routes/items.ts, src/services/itemService.ts | Edit status / PATCH fields | docs/user-guide.md §4 |
 | REQ-F-009 | AC-009 | Deleting an Item with Cascade Removal | 2 | `DELETE /items/{id}` | tests/integration/items.test.ts | src/routes/items.ts, src/services/itemService.ts | Delete button in item detail | docs/user-guide.md §4 |
-| REQ-F-010 | AC-010 | — | 4 | `GET /tags`, `POST /items`, `PATCH /items/{id}` | tests/integration/tags.test.ts, tests/integration/items.test.ts | src/routes/tags.ts, src/services/tagService.ts | Tag input + autocomplete | docs/user-guide.md §5 |
+| REQ-F-010 | AC-010 | — | 4 | `GET /tags`, `POST /items`, `PATCH /items/{id}` | tests/integration/tags.test.ts, tests/integration/items.test.ts (AC-010: 'update tags → tags replaced') | src/routes/tags.ts, src/services/tagService.ts | Tag input + autocomplete | docs/user-guide.md §5 |
 | REQ-F-011 | AC-011 | Filtering by Tag | 4 | `GET /items` (client filter) | — (client only) | — | Tag filter chip (client) | docs/api-design.md §1 |
 | REQ-F-012 | AC-012 | Repeated Viewing with a Different Rating | 4 | `POST /items/{id}/sessions` | tests/integration/sessions.test.ts | src/routes/sessions.ts, src/services/sessionService.ts | Add session sheet | docs/user-guide.md §6 |
 | REQ-F-013 | AC-013 | — | 4 | `GET /items/{id}/sessions` | tests/integration/sessions.test.ts | src/routes/sessions.ts, src/services/sessionService.ts | Session list in item detail | docs/api-addendum.md ADD-04; docs/user-guide.md §6 |
