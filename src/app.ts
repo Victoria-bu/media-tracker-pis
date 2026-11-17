@@ -25,6 +25,7 @@ export function createApp(db: Database.Database, options: AppOptions = {}): expr
   app.use(
     session({
       secret: ENV.SESSION_SECRET,
+      name: 'session',
       resave: false,
       saveUninitialized: false,
       cookie: {
