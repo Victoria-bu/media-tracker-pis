@@ -20,7 +20,8 @@
 6. [Сесії](#6-сесії)
 7. [Добірки](#7-добірки)
 8. [Статистика](#8-статистика)
-9. [Вихід](#9-вихід)
+9. [Зміна нікнейму](#9-зміна-нікнейму)
+10. [Вихід](#10-вихід)
 
 ---
 
@@ -49,12 +50,14 @@ curl -s -X POST http://localhost:3000/api/v1/auth/register \
 }
 ```
 
-**Помилки:**
+**Помилки** (реальні відповіді сервера):
 
 | Ситуація | Код | Відповідь |
 |----------|-----|-----------|
-| Пароль < 8 символів | `400` | `{"code":"VALIDATION_ERROR","field":"password"}` |
-| Email вже зареєстрований | `409` | `{"code":"EMAIL_TAKEN","field":"email"}` |
+| Пароль < 8 символів | `400` | `{"code":"VALIDATION_ERROR","message":"String must contain at least 8 character(s)","field":"password"}` |
+| Невалідний email | `400` | `{"code":"VALIDATION_ERROR","message":"Invalid email","field":"email"}` |
+| Нікнейм < 2 символів | `400` | `{"code":"VALIDATION_ERROR","message":"String must contain at least 2 character(s)","field":"nickname"}` |
+| Email вже зареєстрований | `409` | `{"code":"EMAIL_TAKEN","message":"Обліковий запис з цією адресою вже існує","field":"email"}` |
 
 ---
 
@@ -175,7 +178,7 @@ curl -s -X POST http://localhost:3000/api/v1/items \
 curl -s http://localhost:3000/api/v1/items -b cookies.txt
 ```
 
-**200 OK** — масив усіх елементів контенту, відсортованих за датою додавання (новіші першими).
+**200 OK** — масив усіх елементів контенту. Сервер сортує за `createdAt` DESC (новіші першими — підтверджено `ORDER BY created_at DESC` у репозиторії).
 
 ### Отримати один елемент
 
@@ -232,7 +235,7 @@ curl -s -X DELETE http://localhost:3000/api/v1/items/a1b2c3d4-... -b cookies.txt
 
 ### Список тегів (для автодоповнення)
 
-**REQ-F-011.** Повертає унікальні теги з усіх елементів поточного користувача.
+**REQ-F-010.** Повертає унікальні теги з усіх елементів поточного користувача (використовується для autocomplete при додаванні тегів).
 
 ```bash
 curl -s http://localhost:3000/api/v1/tags -b cookies.txt
@@ -426,13 +429,15 @@ curl -s -X DELETE http://localhost:3000/api/v1/collections/c1d2e3... -b cookies.
 
 ### Параметри
 
-| Параметр | Значення | Опис |
-|----------|----------|------|
-| `period` | `month` | Поточний календарний місяць |
-| `period` | `year` | Поточний рік |
-| `period` | `all` | Весь час |
-| `basis` | `completedAt` *(дефолт)* | Рахує елементи зі `status=completed` та відповідною датою `completedAt` |
-| `basis` | `sessions` | Рахує Сесії за їхньою датою (незалежно від статусу елемента) |
+| Параметр | Обов'язковий | Значення | Опис |
+|----------|:------------:|----------|------|
+| `period` | **так** | `month` | Поточний календарний місяць |
+| `period` | **так** | `year` | Поточний рік |
+| `period` | **так** | `all` | Весь час |
+| `basis` | ні | `completedAt` *(дефолт)* | Рахує елементи зі `status=completed` та відповідною датою `completedAt` |
+| `basis` | ні | `sessions` | Рахує Сесії за їхньою датою (незалежно від статусу елемента) |
+
+Без `period` сервер повертає `400 VALIDATION_ERROR`.
 
 ### Завершені елементи цього місяця
 
@@ -440,7 +445,7 @@ curl -s -X DELETE http://localhost:3000/api/v1/collections/c1d2e3... -b cookies.
 curl -s "http://localhost:3000/api/v1/stats?period=month" -b cookies.txt
 ```
 
-**200 OK:**
+**200 OK** *(ілюстративні значення — ваша статистика відрізнятиметься)*:
 
 ```json
 {
@@ -459,7 +464,7 @@ curl -s "http://localhost:3000/api/v1/stats?period=month" -b cookies.txt
 curl -s "http://localhost:3000/api/v1/stats?period=year&basis=sessions" -b cookies.txt
 ```
 
-**200 OK:**
+**200 OK** *(ілюстративні значення)*:
 
 ```json
 {
@@ -481,9 +486,46 @@ curl -s "http://localhost:3000/api/v1/stats?period=year&basis=sessions" -b cooki
 curl -s "http://localhost:3000/api/v1/stats?period=all" -b cookies.txt
 ```
 
+### Помилки статистики
+
+| Ситуація | HTTP | `code` | Відповідь |
+|----------|:----:|--------|-----------|
+| `period` відсутній або невалідний | `400` | `VALIDATION_ERROR` | `{"code":"VALIDATION_ERROR","message":"period must be one of: month, year, all","field":"period"}` |
+| `basis` невалідний | `400` | `INVALID_BASIS` | `{"code":"INVALID_BASIS","message":"basis must be completedAt or sessions","field":"basis"}` |
+
 ---
 
-## 9. Вихід
+## 9. Зміна нікнейму
+
+**REQ-F-029.** Змінює відображуване ім'я користувача. Email і пароль не зачіпаються.
+
+```bash
+curl -s -X PATCH http://localhost:3000/api/v1/users/me \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{"nickname": "Alice2026"}'
+```
+
+**200 OK** — оновлений об'єкт користувача:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "alice@example.com",
+  "nickname": "Alice2026"
+}
+```
+
+**Помилки:**
+
+| Ситуація | Код | Відповідь |
+|----------|-----|-----------|
+| Нікнейм < 2 або > 50 символів | `400` | `{"code":"VALIDATION_ERROR","field":"nickname"}` |
+| Не аутентифіковано | `401` | `{"code":"UNAUTHORIZED"}` |
+
+---
+
+## 10. Вихід
 
 **REQ-F-003.** Інвалідує сесійну cookie.
 
@@ -508,4 +550,5 @@ curl -s -X POST http://localhost:3000/api/v1/auth/logout \
 | `401` | `UNAUTHORIZED` | Не аутентифіковано (немає сесії) |
 | `404` | `NOT_FOUND` | Ресурс не знайдено або належить іншому користувачу |
 | `409` | `EMAIL_TAKEN` / `ITEM_ALREADY_IN_COLLECTION` | Конфлікт стану |
+| `400` | `INVALID_BASIS` | Невалідне значення параметра `basis` у `/stats` |
 | `500` | `INTERNAL_ERROR` | Непередбачена помилка сервера |
