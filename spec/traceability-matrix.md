@@ -36,7 +36,7 @@
 | REQ-F-022a | AC-030 | — | 7 | `GET /stats?period=` | tests/integration/stats.test.ts | src/routes/stats.ts, src/validators/statsValidators.ts | Period selector (client) | docs/user-guide.md §8 |
 | REQ-F-022b | AC-040…049 | — | 7 | `GET /stats?basis=sessions` | tests/integration/stats-addendum.test.ts | src/routes/stats.ts, src/services/statsService.ts, src/repositories/statsRepo.ts | — (API only) | spec/addendum-07.md; docs/user-guide.md §8 |
 | REQ-F-023 | AC-023 | Searching by Partial Title | 2 | `GET /items` (client search) | — (client only) | — | Search input (client) | docs/api-design.md §1 |
-| REQ-F-024 | AC-024 | — | 2 | `POST /items`, `PATCH /items/{id}` | tests/integration/items.test.ts | src/routes/items.ts, src/repositories/itemRepo.ts | Type-specific fields in form | — |
+| REQ-F-024 | AC-024 | — | 2 | `POST /items`, `PATCH /items/{id}` | tests/integration/items.test.ts | src/routes/items.ts, src/repositories/itemRepo.ts | Type-specific fields in form | docs/api-design.md §REQ-F-024 |
 | REQ-F-025 | AC-025 | — | 2 | `POST /items/{id}/cover`, `DELETE /items/{id}/cover` | tests/integration/items.test.ts | src/routes/items.ts, src/services/itemService.ts | Cover upload button | docs/user-guide.md §4 |
 | REQ-F-026 | AC-026 | — | 2 | `GET /items` (client sort) | — (client only) | — | Sort control (client) | docs/api-design.md §1 |
 | REQ-F-027 | AC-027 | — | 5 | `GET /collections/{id}` (client sort) | — (client only) | — | Sort control in collection (client) | docs/api-design.md §1 |
@@ -49,7 +49,7 @@
 
 | Requirement ID | AC | BDD Scenario | Ticket | API Endpoint | Test | Code | UI element | Documentation |
 |---|---|---|---|---|---|---|---|---|
-| REQ-NF-001 | AC-034 | — | 7 | All read endpoints | tests/integration/stats.test.ts (performance) | src/repositories/itemRepo.ts | — (API only) | — |
+| REQ-NF-001 | AC-034 | — | 7 | All read endpoints | tests/integration/stats.test.ts (performance) | src/repositories/itemRepo.ts | — (API only) | docs/api-design.md §REQ-NF-001 |
 | REQ-NF-002 | AC-035 | — | 1 | `POST /auth/register`; 401 on all protected | tests/integration/auth.test.ts, tests/unit/services/authService.test.ts | src/services/authService.ts, src/middleware/auth.ts | — (API only) | docs/api-addendum.md ADD-06 |
 | REQ-NF-003 | AC-036 | — | 7 | All write endpoints | tests/integration/stats.test.ts (reliability) | src/services/collectionService.ts (transaction) | — (API only) | docs/architecture.md |
 | REQ-NF-004 | AC-037 | — | 7 | — (UI responsiveness) | — (not API) | — | (client) | — |
