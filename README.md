@@ -3,6 +3,7 @@
 REST API for tracking books, TV series, and films.
 Built as part of the "Information Systems Design" course (SDD + TDD methodology).
 
+**Repository:** https://github.com/Victoria-bu/media-tracker-pis  
 **Specification:** `spec/srs.md` v1.3.0 &nbsp;·&nbsp; **API contract:** `spec/openapi.yaml`
 
 ---
@@ -92,6 +93,10 @@ npm run lint:fix    # ESLint — auto-fix safe violations (import type, etc.)
 Test isolation: every integration test spins up a **fresh in-memory SQLite database**.
 No test reads or writes `./data/`.
 
+> **System logging:** pino writes structured JSON to **stdout** (not to files).
+> `logs/test-log-*.md` are written by `scripts/write-test-log.js` after each test run —
+> they are hand-readable test reports, not runtime logs.
+
 Test results: `logs/test-log-*.md` (committed after each stage).
 
 ---
@@ -115,6 +120,7 @@ src/
 spec/
 ├── srs.md               requirements, glossary, acceptance criteria
 ├── openapi.yaml         API contract (source of truth for HTTP contract)
+├── addendum-07.md       ADD-07: basis=sessions stats mode
 └── traceability-matrix.md
 docs/
 ├── api/index.html       Redocly HTML from openapi.yaml  (open in browser)
@@ -167,8 +173,12 @@ Full contract: [`spec/openapi.yaml`](spec/openapi.yaml) · rendered: [`docs/api/
 |---|---|
 | `logs/gate-foundation.md` | G1 decision (Etapes 1–2) |
 | `logs/gate-collections.md` | G2 decision (Etapes 3–4) |
-| `logs/test-log-*.md` | Per-stage test run reports |
+| `logs/gate-release.md` | Release gate decision |
+| `logs/gate-spec-addendum.md` | Spec addendum gate |
+| `logs/api-contract-run.md` | Prism proxy validation results (15 requests) |
+| `logs/test-log-*.md` | Per-stage test run reports (written by `scripts/write-test-log.js`) |
 | `logs/lint-report-*.md` | ESLint before/after report |
 | `docs/plan.md` | Implementation plan |
 | `docs/api-addendum.md` | API behavior not covered by SRS |
 | `docs/architecture.md` | System architecture reference |
+| `spec/addendum-07.md` | ADD-07: basis=sessions stats mode specification |
