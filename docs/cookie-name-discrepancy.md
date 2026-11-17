@@ -1,89 +1,45 @@
-# Cookie name discrepancy — ADR (рішення потрібне)
+# Cookie name discrepancy — RESOLVED (Variant B)
 
-## Проблема
+## Проблема (вирішена)
 
-`spec/openapi.yaml` (рядок 41) оголошує ім'я cookie у securityScheme:
-
-```yaml
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: session        # ← так написано в специфікації
-```
-
-Реальна відповідь сервера (підтверджено `curl -sI POST /auth/login`):
-
-```
-Set-Cookie: connect.sid=s%3A...; Path=/; HttpOnly; SameSite=Lax
-```
-
-Сервер відправляє `connect.sid` — стандартне ім'я, яке використовує бібліотека
-`express-session` за замовчуванням. Ім'я `session` у специфікації не відповідає дійсності.
-
----
-
-## Вплив
-
-| Що | Вплив |
-|----|-------|
-| Prism proxy validation | Prism шукає cookie `session`, не знаходить її — може хибно сигналізувати про відсутність auth |
-| Redocly / Swagger UI | Відображає `session` у документації — може збити з пантелику користувача |
-| Клієнтський код, що читає cookie вручну | Якщо покладається на ім'я зі специфікації, не знайде `connect.sid` |
-| curl / supertest тести | Не впливає — браузер і supertest передають cookie як є, незалежно від імені |
-
----
-
-## Варіанти рішення
-
-### Варіант A — Виправити специфікацію (рекомендований)
-
-Змінити `name: session` → `name: connect.sid` у `spec/openapi.yaml`.
+`spec/openapi.yaml` (рядок 41) оголошував ім'я cookie:
 
 ```yaml
-# spec/openapi.yaml
 cookieAuth:
   type: apiKey
   in: cookie
-  name: connect.sid      # ← відповідає реальній поведінці express-session
+  name: session
 ```
 
-**За:** специфікація відповідає фактичній поведінці сервера.  
-**Проти:** якщо в майбутньому ім'я cookie буде змінено через `express-session` опцію `name:`,
-специфікацію треба оновлювати синхронно.
+До виправлення сервер відправляв `connect.sid` — стандартне ім'я `express-session`.
 
-### Варіант B — Налаштувати express-session
+## Рішення — Варіант B
 
-Встановити власне ім'я cookie в `src/app.ts`:
+Додано `name: 'session'` у виклик `session()` в `src/app.ts`:
 
 ```typescript
-app.use(session({
-  secret: ENV.SESSION_SECRET,
-  name: 'session',   // ← замість connect.sid
-  // ...
-}));
+app.use(
+  session({
+    secret: ENV.SESSION_SECRET,
+    name: 'session',   // ← explicit, matches openapi.yaml securityScheme
+    resave: false,
+    saveUninitialized: false,
+    cookie: { httpOnly: true, secure: ENV.NODE_ENV === 'production', sameSite: 'lax' },
+  }),
+);
 ```
 
-**За:** ім'я cookie відповідає специфікації; зменшує залежність від дефолтів бібліотеки.  
-**Проти:** зміна в коді, потрібно перезапустити сервер; активні сесії (якщо є) будуть анульовані.
+## Верифікація (TDD)
 
-### Варіант C — Задокументувати як відоме відхилення
-
-Додати note у `spec/openapi.yaml` та в `docs/api-addendum.md`:
-
-```yaml
-cookieAuth:
-  type: apiKey
-  in: cookie
-  name: connect.sid
-  description: >
-    express-session default cookie name. Specified as "session" in earlier
-    versions of this document — corrected in v1.x (see api-addendum.md ADD-XX).
+**Red commit** `7188cd6` — тест `NF-007-B` у `tests/integration/auth.test.ts`:
+```
+expected 'connect.sid=s%3A...' to match /^session=/   ← FAIL
 ```
 
----
+**Green commit** `a9c578d` — після додавання `name: 'session'`:
+```
+Set-Cookie: session=s%3A...; Path=/; HttpOnly; SameSite=Lax   ← PASS
+```
 
-## Поточний стан
-
-Розбіжність задокументована. **Чекаємо рішення** для одного з варіантів A, B або C.
+Повний прогін: **147/147** тестів (146 + NF-007-B).  
+Лог: `logs/test-log-etapeall-1794924516777.md`
