@@ -70,6 +70,8 @@ Default port: `3000`. Configurable via `PORT` env var.
 npm test          # run all tests + write log to logs/
 npx vitest        # watch mode
 npx vitest run    # single run, no log
+npm run lint      # ESLint check (0 problems = clean)
+npm run lint:fix  # auto-fix safe lint violations
 ```
 
 Test results are written to `logs/test-log-*.md` after each run.

@@ -9,7 +9,9 @@
     "dev": "tsx watch src/server.ts",
     "test": "vitest run && node scripts/write-test-log.js",
     "test:watch": "vitest",
-    "test:stage1": "vitest run tests/integration/auth.test.ts tests/integration/users.test.ts tests/unit/services/authService.test.ts && node scripts/write-test-log.js stage1"
+    "test:stage1": "vitest run tests/integration/auth.test.ts tests/integration/users.test.ts tests/unit/services/authService.test.ts && node scripts/write-test-log.js stage1",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
   },
   "directories": {
     "doc": "docs",
