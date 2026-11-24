@@ -2,10 +2,6 @@
 
 Запуск: `npx eslint src/` після всіх виправлень.
 
-```
-(no output)
-```
-
 **✓ 0 problems (0 errors, 0 warnings)**
 
 ---
